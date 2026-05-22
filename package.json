@@ -1,20 +1,20 @@
 {
-	"name": "com.splinemesherpro.bovinelabstimelinedistance",
-	"displayName":"BovineLabs Timeline Distance",
-	"version": "0.1.0",
-	"unity": "6000.6",
-	"unityRelease": "0a5",
-	"description": "Replace this with your own description of the package. \n\nFor best results, use this text to summarize: \n\u25AA What the package does \n\u25AA How it can benefit the user \n\nNote: Special formatting characters are supported, including line breaks ('\\n') and bullets ('\\u25AA').",
-	"dependencies": {
-		"com.unity.test-framework": "1.6.0"
-	},
-	"author": {
-		"name": "Spline Mesher Pro",
-		"url": "http://www.example.com",
-		"email": "example@email.com"
-	},
-	"changelogUrl": "https://example.com/changelog.html",
-	"documentationUrl": "https://example.com/",
-	"licensesUrl": "https://example.com/licensing.html",
-	"hideInEditor": false
+  "name": "com.splinemesherpro.bovinelabstimelinedistance",
+  "displayName": "BovineLabs Timeline Distance",
+  "version": "0.1.0",
+  "unity": "6000.6",
+  "unityRelease": "0a5",
+  "description": "Replace this with your own description of the package. \n\nFor best results, use this text to summarize: \n\u25AA What the package does \n\u25AA How it can benefit the user \n\nNote: Special formatting characters are supported, including line breaks ('\\n') and bullets ('\\u25AA').",
+  "dependencies": {
+    "com.unity.test-framework": "1.6.0"
+  },
+  "author": {
+    "name": "Spline Mesher Pro",
+    "url": "http://www.example.com",
+    "email": "example@email.com"
+  },
+  "changelogUrl": "https://example.com/changelog.html",
+  "documentationUrl": "https://example.com/",
+  "licensesUrl": "https://example.com/licensing.html",
+  "hideInEditor": false
 }

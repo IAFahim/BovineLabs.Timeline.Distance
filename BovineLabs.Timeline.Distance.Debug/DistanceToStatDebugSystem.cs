@@ -21,16 +21,20 @@ using UnityEngine;
 namespace BovineLabs.Timeline.Distance.Debug
 {
     [Configurable]
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1611:Element parameters should be documented", Justification = "Using see cref")]
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1611:Element parameters should be documented",
+        Justification = "Using see cref")]
     public static class DistanceToStatDebugSystemConfig
     {
         private const string DrawForced = "distancetostatdebugsystem.force-draw";
         private const string DrawGlobalDescEnabled = "Enable the drawer in the editor.";
 
         [ConfigVar(DrawForced, false, DrawGlobalDescEnabled)]
-        internal static readonly SharedStatic<bool> Enabled = SharedStatic<bool>.GetOrCreate<DistanceToStatDebugSystemForced>();
+        internal static readonly SharedStatic<bool> Enabled =
+            SharedStatic<bool>.GetOrCreate<DistanceToStatDebugSystemForced>();
 
-        private struct DistanceToStatDebugSystemForced { }
+        private struct DistanceToStatDebugSystemForced
+        {
+        }
     }
 
     [WorldSystemFilter(WorldSystemFilterFlags.LocalSimulation | WorldSystemFilterFlags.ServerSimulation |
@@ -95,9 +99,9 @@ namespace BovineLabs.Timeline.Distance.Debug
             [ReadOnly] public UnsafeBufferLookup<EntityLinkEntry> Links;
 
             // Beautiful Minimalist Palette
-            private static readonly Color LineColor = new Color(0.1f, 0.85f, 0.75f, 0.4f);  // Soft Mint/Cyan
-            private static readonly Color PointColor = new Color(0.1f, 0.95f, 0.85f, 0.9f); // Bright Mint
-            private static readonly Color TextColor = new Color(1f, 1f, 1f, 0.95f);         // Crisp White
+            private static readonly Color LineColor = new(0.1f, 0.85f, 0.75f, 0.4f); // Soft Mint/Cyan
+            private static readonly Color PointColor = new(0.1f, 0.95f, 0.85f, 0.9f); // Bright Mint
+            private static readonly Color TextColor = new(1f, 1f, 1f, 0.95f); // Crisp White
 
             private void Execute(Entity entity, in TrackBinding binding, in DistanceToStatData data)
             {
@@ -108,7 +112,8 @@ namespace BovineLabs.Timeline.Distance.Debug
                 var toEntity = ResolveTarget(binding.Value, data.To, data.ToLinkKey, in targets);
 
                 if (fromEntity == Entity.Null || toEntity == Entity.Null) return;
-                if (!LtwLookup.TryGetComponent(fromEntity, out var fromLtw) || !LtwLookup.TryGetComponent(toEntity, out var toLtw)) return;
+                if (!LtwLookup.TryGetComponent(fromEntity, out var fromLtw) ||
+                    !LtwLookup.TryGetComponent(toEntity, out var toLtw)) return;
 
                 var start = fromLtw.Position;
                 var end = toLtw.Position;
@@ -128,8 +133,9 @@ namespace BovineLabs.Timeline.Distance.Debug
                 const int segments = 20;
                 const int points = segments * 2;
                 var linesData = stackalloc float3[points];
-                var lines = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<float3>(linesData, points, Allocator.None);
-                
+                var lines = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<float3>(linesData, points,
+                    Allocator.None);
+
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref lines, AtomicSafetyHandle.GetTempMemoryHandle());
 #endif
@@ -142,9 +148,9 @@ namespace BovineLabs.Timeline.Distance.Debug
                 {
                     var t = i / (float)segments;
                     var u = 1 - t;
-                    
+
                     // Bezier Point
-                    var current = (u * u * start) + (2 * u * t * mid) + (t * t * end);
+                    var current = u * u * start + 2 * u * t * mid + t * t * end;
 
                     lines[lineLength++] = prev;
                     lines[lineLength++] = current;
@@ -159,8 +165,8 @@ namespace BovineLabs.Timeline.Distance.Debug
                 Drawer.Point(end, 0.06f, PointColor);
 
                 // Format the text elegantly: "5.2m  [520]" 
-                int statValue = (int)math.round(distance * multiplier);
-                
+                var statValue = (int)math.round(distance * multiplier);
+
                 var text = new FixedString64Bytes();
                 text.Append(distance); // Formatting float natively
                 text.Append('m');
@@ -175,10 +181,9 @@ namespace BovineLabs.Timeline.Distance.Debug
 
             private Entity ResolveTarget(Entity self, Target mode, ushort linkKey, in Targets targets)
             {
-                if (linkKey != 0 && EntityLinkResolver.TryResolve(self, targets, mode, linkKey, LinkSources, Links, out var linked))
-                {
+                if (linkKey != 0 &&
+                    EntityLinkResolver.TryResolve(self, targets, mode, linkKey, LinkSources, Links, out var linked))
                     return linked;
-                }
                 return targets.Get(mode, self);
             }
         }

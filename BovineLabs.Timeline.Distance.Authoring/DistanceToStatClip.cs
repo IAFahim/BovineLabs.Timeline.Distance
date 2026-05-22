@@ -11,22 +11,24 @@ namespace BovineLabs.Timeline.Distance.Authoring
 {
     public sealed class DistanceToStatClip : DOTSClip, ITimelineClipAsset
     {
-        [Header("Distance Calculation")]
-        public Target from = Target.Owner;
+        [Header("Distance Calculation")] public Target from = Target.Owner;
+
         public EntityLinkSchema fromLink;
-        
+
         public Target to = Target.Target;
         public EntityLinkSchema toLink;
-        
-        [Header("Stat Routing")]
-        public Target statTarget = Target.Self;
+
+        [Header("Stat Routing")] public Target statTarget = Target.Self;
+
         public EntityLinkSchema statTargetLink;
         public StatSchemaObject stat;
-        [Tooltip("Multiplier applied before converting the float distance into an integer stat (e.g., 100 to map 1.5m to 150)")]
+
+        [Tooltip(
+            "Multiplier applied before converting the float distance into an integer stat (e.g., 100 to map 1.5m to 150)")]
         public float multiplier = 1f;
-        
-        [Header("Update Mode")]
-        public DistanceUpdateMode mode = DistanceUpdateMode.Continuous;
+
+        [Header("Update Mode")] public DistanceUpdateMode mode = DistanceUpdateMode.Continuous;
+
         [Tooltip("Used only if Mode is Interval")]
         public float interval = 0.5f;
 
@@ -54,7 +56,7 @@ namespace BovineLabs.Timeline.Distance.Authoring
                 Interval = interval,
                 Multiplier = multiplier
             });
-            
+
             context.Baker.AddComponent<DistanceToStatState>(clipEntity);
 
             base.Bake(clipEntity, context);

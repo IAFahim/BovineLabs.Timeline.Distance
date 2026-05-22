@@ -64,20 +64,20 @@ namespace BovineLabs.Timeline.Distance
         {
             public float DeltaTime;
             public NativeQueue<StatMutation>.ParallelWriter Mutations;
-            
+
             [ReadOnly] public ComponentLookup<Targets> TargetsLookup;
             [ReadOnly] public ComponentLookup<LocalToWorld> LtwLookup;
             [ReadOnly] public UnsafeComponentLookup<EntityLinkSource> Sources;
             [ReadOnly] public UnsafeBufferLookup<EntityLinkEntry> Entries;
 
-            private void Execute(Entity clipEntity, in TrackBinding binding, in DistanceToStatData data, 
+            private void Execute(Entity clipEntity, in TrackBinding binding, in DistanceToStatData data,
                 ref DistanceToStatState state, EnabledRefRO<ClipActivePrevious> activePrev)
             {
                 if (binding.Value == Entity.Null || data.StatKey.Value == 0) return;
                 if (!TargetsLookup.TryGetComponent(binding.Value, out var targets)) return;
 
-                bool isFirstFrame = !activePrev.ValueRO;
-                bool shouldUpdate = false;
+                var isFirstFrame = !activePrev.ValueRO;
+                var shouldUpdate = false;
 
                 if (data.Mode == DistanceUpdateMode.OnStart)
                 {
@@ -107,20 +107,23 @@ namespace BovineLabs.Timeline.Distance
 
                 if (!shouldUpdate) return;
 
-                var fromEntity = ResolveTarget(binding.Value, data.From, data.FromLinkKey, in targets, Sources, Entries);
+                var fromEntity = ResolveTarget(binding.Value, data.From, data.FromLinkKey, in targets, Sources,
+                    Entries);
                 var toEntity = ResolveTarget(binding.Value, data.To, data.ToLinkKey, in targets, Sources, Entries);
-                var statEntity = ResolveTarget(binding.Value, data.StatTarget, data.StatLinkKey, in targets, Sources, Entries);
+                var statEntity = ResolveTarget(binding.Value, data.StatTarget, data.StatLinkKey, in targets, Sources,
+                    Entries);
 
                 if (fromEntity == Entity.Null || toEntity == Entity.Null || statEntity == Entity.Null) return;
-                if (!LtwLookup.TryGetComponent(fromEntity, out var fromLtw) || !LtwLookup.TryGetComponent(toEntity, out var toLtw)) return;
+                if (!LtwLookup.TryGetComponent(fromEntity, out var fromLtw) ||
+                    !LtwLookup.TryGetComponent(toEntity, out var toLtw)) return;
 
                 var distance = math.distance(fromLtw.Position, toLtw.Position) * data.Multiplier;
 
-                var modifier = new StatModifier 
-                { 
-                    Type = data.StatKey, 
-                    ModifyType = StatModifyType.Added, 
-                    Value = (int)math.round(distance) 
+                var modifier = new StatModifier
+                {
+                    Type = data.StatKey,
+                    ModifyType = StatModifyType.Added,
+                    Value = (int)math.round(distance)
                 };
 
                 Mutations.Enqueue(new StatMutation
@@ -139,7 +142,7 @@ namespace BovineLabs.Timeline.Distance
         private partial struct GatherRemoveJob : IJobEntity
         {
             public NativeQueue<StatMutation>.ParallelWriter Mutations;
-            
+
             [ReadOnly] public ComponentLookup<Targets> TargetsLookup;
             [ReadOnly] public UnsafeComponentLookup<EntityLinkSource> Sources;
             [ReadOnly] public UnsafeBufferLookup<EntityLinkEntry> Entries;
@@ -149,7 +152,8 @@ namespace BovineLabs.Timeline.Distance
                 if (binding.Value == Entity.Null || data.StatKey.Value == 0) return;
                 if (!TargetsLookup.TryGetComponent(binding.Value, out var targets)) return;
 
-                var statEntity = ResolveTarget(binding.Value, data.StatTarget, data.StatLinkKey, in targets, Sources, Entries);
+                var statEntity = ResolveTarget(binding.Value, data.StatTarget, data.StatLinkKey, in targets, Sources,
+                    Entries);
                 if (statEntity == Entity.Null) return;
 
                 Mutations.Enqueue(new StatMutation
@@ -178,36 +182,31 @@ namespace BovineLabs.Timeline.Distance
 
                     var array = buffer.AsNativeArray();
                     for (var i = array.Length - 1; i >= 0; i--)
-                    {
                         if (array[i].SourceEntity == mutation.Source)
                         {
                             buffer.RemoveAtSwapBack(i);
                             break;
                         }
-                    }
 
                     if (!mutation.IsRemove)
-                    {
                         buffer.Add(new StatModifiers
                         {
                             SourceEntity = mutation.Source,
                             Value = mutation.Modifier
                         });
-                    }
                 }
             }
         }
 
         private static Entity ResolveTarget(
-            Entity self, Target mode, ushort linkKey, 
-            in Targets targets, 
-            in UnsafeComponentLookup<EntityLinkSource> sources, 
+            Entity self, Target mode, ushort linkKey,
+            in Targets targets,
+            in UnsafeComponentLookup<EntityLinkSource> sources,
             in UnsafeBufferLookup<EntityLinkEntry> entries)
         {
-            if (linkKey != 0 && EntityLinkResolver.TryResolve(self, targets, mode, linkKey, sources, entries, out var linked))
-            {
+            if (linkKey != 0 &&
+                EntityLinkResolver.TryResolve(self, targets, mode, linkKey, sources, entries, out var linked))
                 return linked;
-            }
             return targets.Get(mode, self);
         }
     }
