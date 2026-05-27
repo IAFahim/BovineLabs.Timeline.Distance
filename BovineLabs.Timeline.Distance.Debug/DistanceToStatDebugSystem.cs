@@ -10,6 +10,7 @@ using BovineLabs.Timeline.Data;
 using BovineLabs.Timeline.Distance.Data;
 using BovineLabs.Timeline.EntityLinks;
 using BovineLabs.Timeline.EntityLinks.Data;
+using BovineLabs.Timeline.Core.Debug;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -25,15 +26,14 @@ namespace BovineLabs.Timeline.Distance.Debug
         Justification = "Using see cref")]
     public static class DistanceToStatDebugSystemConfig
     {
-        private const string DrawForced = "distancetostatdebugsystem.force-draw";
-        private const string DrawGlobalDescEnabled = "Enable the drawer in the editor.";
+        [ConfigVar("bovinelabs.distancetostatdebugsystem.draw-enabled", false,
+            "Enable the Distance stat debug drawer in the editor.")]
+        public static readonly SharedStatic<bool> Enabled =
+            SharedStatic<bool>.GetOrCreate<Tags.Enabled>();
 
-        [ConfigVar(DrawForced, false, DrawGlobalDescEnabled)]
-        internal static readonly SharedStatic<bool> Enabled =
-            SharedStatic<bool>.GetOrCreate<DistanceToStatDebugSystemForced>();
-
-        private struct DistanceToStatDebugSystemForced
+        private struct Tags
         {
+            public struct Enabled { }
         }
     }
 
@@ -59,19 +59,9 @@ namespace BovineLabs.Timeline.Distance.Debug
 
         public void OnUpdate(ref SystemState state)
         {
-            if (!SystemAPI.HasSingleton<DrawSystem.Singleton>()) return;
-            ref var drawSystem = ref SystemAPI.GetSingletonRW<DrawSystem.Singleton>().ValueRW;
-
-            Drawer drawer;
-            if (!DistanceToStatDebugSystemConfig.Enabled.Data)
-            {
-                drawer = drawSystem.CreateDrawer<DistanceToStatDebugSystem>();
-                if (!drawer.IsEnabled) return;
-            }
-            else
-            {
-                drawer = drawSystem.CreateDrawer();
-            }
+            if (!TimelineDebugUtility.TryGetDrawer<DistanceToStatDebugSystem>(
+                    ref state, DistanceToStatDebugSystemConfig.Enabled.Data, out var drawer))
+                return;
 
             _ltwLookup.Update(ref state);
             _targetsLookup.Update(ref state);
@@ -98,10 +88,9 @@ namespace BovineLabs.Timeline.Distance.Debug
             [ReadOnly] public UnsafeComponentLookup<EntityLinkSource> LinkSources;
             [ReadOnly] public UnsafeBufferLookup<EntityLinkEntry> Links;
 
-            // Beautiful Minimalist Palette
-            private static readonly Color LineColor = new(0.1f, 0.85f, 0.75f, 0.4f); // Soft Mint/Cyan
-            private static readonly Color PointColor = new(0.1f, 0.95f, 0.85f, 0.9f); // Bright Mint
-            private static readonly Color TextColor = new(1f, 1f, 1f, 0.95f); // Crisp White
+            private static readonly Color LineColor = TimelineDebugColors.Connection;
+            private static readonly Color PointColor = TimelineDebugColors.Anchor;
+            private static readonly Color TextColor = TimelineDebugColors.Label;
 
             private void Execute(Entity entity, in TrackBinding binding, in DistanceToStatData data)
             {
@@ -170,7 +159,9 @@ namespace BovineLabs.Timeline.Distance.Debug
                 var text = new FixedString64Bytes();
                 text.Append(distance); // Formatting float natively
                 text.Append('m');
-                text.Append("  [");
+                text.Append(' ');
+                text.Append(' ');
+                text.Append('[');
                 text.Append(statValue);
                 text.Append(']');
 

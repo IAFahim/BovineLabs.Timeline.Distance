@@ -5,6 +5,7 @@
     "BovineLabs.Anchor",
     "BovineLabs.Core",
     "BovineLabs.Core.Extensions",
+    "BovineLabs.Timeline.Core.Debug",
     "BovineLabs.Timeline.Distance",
     "BovineLabs.Timeline.Distance.Data",
     "Unity.AppUI",
