@@ -57,6 +57,7 @@ namespace BovineLabs.Timeline.Distance.Debug
             _linkLookup = state.GetUnsafeBufferLookup<EntityLinkEntry>(true);
         }
 
+        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             if (!TimelineDebugUtility.TryGetDrawer<DistanceToStatDebugSystem>(
