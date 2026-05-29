@@ -43,6 +43,8 @@ namespace BovineLabs.Timeline.Distance.Debug
     public partial struct DistanceToStatDebugSystem : ISystem
     {
         private UnsafeComponentLookup<LocalToWorld> _ltwLookup;
+        private UnsafeComponentLookup<LocalTransform> _localTransformLookup;
+        private UnsafeComponentLookup<Parent> _parentLookup;
         private ComponentLookup<Targets> _targetsLookup;
         private UnsafeComponentLookup<EntityLinkSource> _linkSourceLookup;
         private UnsafeBufferLookup<EntityLinkEntry> _linkLookup;
@@ -52,6 +54,8 @@ namespace BovineLabs.Timeline.Distance.Debug
         {
             state.RequireForUpdate<DrawSystem.Singleton>();
             _ltwLookup = state.GetUnsafeComponentLookup<LocalToWorld>(true);
+            _localTransformLookup = state.GetUnsafeComponentLookup<LocalTransform>(true);
+            _parentLookup = state.GetUnsafeComponentLookup<Parent>(true);
             _targetsLookup = state.GetComponentLookup<Targets>(true);
             _linkSourceLookup = state.GetUnsafeComponentLookup<EntityLinkSource>(true);
             _linkLookup = state.GetUnsafeBufferLookup<EntityLinkEntry>(true);
@@ -61,10 +65,12 @@ namespace BovineLabs.Timeline.Distance.Debug
         public void OnUpdate(ref SystemState state)
         {
             if (!TimelineDebugUtility.TryGetDrawer<DistanceToStatDebugSystem>(
-                    ref state, DistanceToStatDebugSystemConfig.Enabled.Data, out var drawer))
+                  ref state, DistanceToStatDebugSystemConfig.Enabled.Data, out var drawer))
                 return;
 
             _ltwLookup.Update(ref state);
+            _localTransformLookup.Update(ref state);
+            _parentLookup.Update(ref state);
             _targetsLookup.Update(ref state);
             _linkSourceLookup.Update(ref state);
             _linkLookup.Update(ref state);
@@ -73,9 +79,11 @@ namespace BovineLabs.Timeline.Distance.Debug
             {
                 Drawer = drawer,
                 LtwLookup = _ltwLookup,
+                LocalTransformLookup = _localTransformLookup,
+                ParentLookup = _parentLookup,
                 TargetsLookup = _targetsLookup,
-                LinkSources = _linkSourceLookup,
-                Links = _linkLookup
+                LinkSourceLookup = _linkSourceLookup,
+                LinkLookup = _linkLookup
             }.Schedule(state.Dependency);
         }
 
@@ -85,9 +93,20 @@ namespace BovineLabs.Timeline.Distance.Debug
         {
             public Drawer Drawer;
             [ReadOnly] public UnsafeComponentLookup<LocalToWorld> LtwLookup;
+            [ReadOnly] public UnsafeComponentLookup<LocalTransform> LocalTransformLookup;
+            [ReadOnly] public UnsafeComponentLookup<Parent> ParentLookup;
             [ReadOnly] public ComponentLookup<Targets> TargetsLookup;
-            [ReadOnly] public UnsafeComponentLookup<EntityLinkSource> LinkSources;
-            [ReadOnly] public UnsafeBufferLookup<EntityLinkEntry> Links;
+            [ReadOnly] public UnsafeComponentLookup<EntityLinkSource> LinkSourceLookup;
+            [ReadOnly] public UnsafeBufferLookup<EntityLinkEntry> LinkLookup;
+
+            private float3 GetAntiJitterPosition(Entity e, float3 fallback)
+            {
+                if (LocalTransformLookup.HasComponent(e) && !ParentLookup.HasComponent(e))
+                {
+                    return LocalTransformLookup[e].Position;
+                }
+                return fallback;
+            }
 
             private static readonly Color LineColor = TimelineDebugColors.Connection;
             private static readonly Color PointColor = TimelineDebugColors.Anchor;
@@ -105,8 +124,8 @@ namespace BovineLabs.Timeline.Distance.Debug
                 if (!LtwLookup.TryGetComponent(fromEntity, out var fromLtw) ||
                     !LtwLookup.TryGetComponent(toEntity, out var toLtw)) return;
 
-                var start = fromLtw.Position;
-                var end = toLtw.Position;
+                var start = GetAntiJitterPosition(fromEntity, fromLtw.Position);
+                var end = GetAntiJitterPosition(toEntity, toLtw.Position);
 
                 DrawElegantTether(start, end, data.Multiplier);
             }
@@ -174,7 +193,7 @@ namespace BovineLabs.Timeline.Distance.Debug
             private Entity ResolveTarget(Entity self, Target mode, ushort linkKey, in Targets targets)
             {
                 if (linkKey != 0 &&
-                    EntityLinkResolver.TryResolve(self, targets, mode, linkKey, LinkSources, Links, out var linked))
+                    EntityLinkResolver.TryResolve(self, targets, mode, linkKey, LinkSourceLookup, LinkLookup, out var linked))
                     return linked;
                 return targets.Get(mode, self);
             }
