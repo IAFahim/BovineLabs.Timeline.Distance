@@ -135,9 +135,8 @@ namespace BovineLabs.Timeline.Distance.Debug
                 var distance = math.distance(start, end);
                 if (distance < 0.01f) return;
 
-                // Create a gentle arc based on distance to make it look organic
                 var mid = (start + end) * 0.5f;
-                mid.y += math.clamp(distance * 0.15f, 0.2f, 2.0f); // Arc peak
+                mid.y += math.clamp(distance * 0.15f, 0.2f, 2.0f);
 
                 const int segments = 20;
                 const int points = segments * 2;
@@ -152,13 +151,11 @@ namespace BovineLabs.Timeline.Distance.Debug
                 var lineLength = 0;
                 var prev = start;
 
-                // Quadratic Bezier Curve Generation
                 for (var i = 1; i <= segments; i++)
                 {
                     var t = i / (float)segments;
                     var u = 1 - t;
 
-                    // Bezier Point
                     var current = u * u * start + 2 * u * t * mid + t * t * end;
 
                     lines[lineLength++] = prev;
@@ -166,18 +163,15 @@ namespace BovineLabs.Timeline.Distance.Debug
                     prev = current;
                 }
 
-                // Draw the sleek curved line
                 Drawer.Lines(lines.GetSubArray(0, lineLength), LineColor);
 
-                // Draw sharp, minimal anchor points
                 Drawer.Point(start, 0.06f, PointColor);
                 Drawer.Point(end, 0.06f, PointColor);
 
-                // Format the text elegantly: "5.2m  [520]" 
                 var statValue = (int)math.round(distance * multiplier);
 
                 var text = new FixedString64Bytes();
-                text.Append(distance); // Formatting float natively
+                text.Append(distance);
                 text.Append('m');
                 text.Append(' ');
                 text.Append(' ');
@@ -185,7 +179,6 @@ namespace BovineLabs.Timeline.Distance.Debug
                 text.Append(statValue);
                 text.Append(']');
 
-                // Float the text exactly at the peak of the arc with a small visual lift
                 var textPos = mid + new float3(0f, 0.25f, 0f);
                 Drawer.Text64(textPos, text, TextColor, 12f);
             }
