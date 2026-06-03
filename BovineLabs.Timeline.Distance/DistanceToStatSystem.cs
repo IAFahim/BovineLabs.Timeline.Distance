@@ -37,8 +37,8 @@ namespace BovineLabs.Timeline.Distance
             {
                 DeltaTime = SystemAPI.Time.DeltaTime,
                 Mutations = mutations.AsParallelWriter(),
-                TargetsLookup = SystemAPI.GetComponentLookup<Targets>(true),
-                LtwLookup = SystemAPI.GetComponentLookup<LocalToWorld>(true),
+                TargetsLookup = state.GetUnsafeComponentLookup<Targets>(true),
+                LtwLookup = state.GetUnsafeComponentLookup<LocalToWorld>(true),
                 Sources = state.GetUnsafeComponentLookup<EntityLinkSource>(true),
                 Entries = state.GetUnsafeBufferLookup<EntityLinkEntry>(true)
             }.ScheduleParallel(state.Dependency);
@@ -46,7 +46,7 @@ namespace BovineLabs.Timeline.Distance
             state.Dependency = new GatherRemoveJob
             {
                 Mutations = mutations.AsParallelWriter(),
-                TargetsLookup = SystemAPI.GetComponentLookup<Targets>(true),
+                TargetsLookup = state.GetUnsafeComponentLookup<Targets>(true),
                 Sources = state.GetUnsafeComponentLookup<EntityLinkSource>(true),
                 Entries = state.GetUnsafeBufferLookup<EntityLinkEntry>(true)
             }.ScheduleParallel(state.Dependency);
@@ -66,8 +66,8 @@ namespace BovineLabs.Timeline.Distance
             public float DeltaTime;
             public NativeQueue<StatMutation>.ParallelWriter Mutations;
 
-            [ReadOnly] public ComponentLookup<Targets> TargetsLookup;
-            [ReadOnly] public ComponentLookup<LocalToWorld> LtwLookup;
+            [ReadOnly] public UnsafeComponentLookup<Targets> TargetsLookup;
+            [ReadOnly] public UnsafeComponentLookup<LocalToWorld> LtwLookup;
             [ReadOnly] public UnsafeComponentLookup<EntityLinkSource> Sources;
             [ReadOnly] public UnsafeBufferLookup<EntityLinkEntry> Entries;
 
@@ -144,7 +144,7 @@ namespace BovineLabs.Timeline.Distance
         {
             public NativeQueue<StatMutation>.ParallelWriter Mutations;
 
-            [ReadOnly] public ComponentLookup<Targets> TargetsLookup;
+            [ReadOnly] public UnsafeComponentLookup<Targets> TargetsLookup;
             [ReadOnly] public UnsafeComponentLookup<EntityLinkSource> Sources;
             [ReadOnly] public UnsafeBufferLookup<EntityLinkEntry> Entries;
 

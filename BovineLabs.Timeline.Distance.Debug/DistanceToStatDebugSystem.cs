@@ -45,7 +45,7 @@ namespace BovineLabs.Timeline.Distance.Debug
         private UnsafeComponentLookup<LocalToWorld> _ltwLookup;
         private UnsafeComponentLookup<LocalTransform> _localTransformLookup;
         private UnsafeComponentLookup<Parent> _parentLookup;
-        private ComponentLookup<Targets> _targetsLookup;
+        private UnsafeComponentLookup<Targets> _targetsLookup;
         private UnsafeComponentLookup<EntityLinkSource> _linkSourceLookup;
         private UnsafeBufferLookup<EntityLinkEntry> _linkLookup;
 
@@ -56,7 +56,7 @@ namespace BovineLabs.Timeline.Distance.Debug
             _ltwLookup = state.GetUnsafeComponentLookup<LocalToWorld>(true);
             _localTransformLookup = state.GetUnsafeComponentLookup<LocalTransform>(true);
             _parentLookup = state.GetUnsafeComponentLookup<Parent>(true);
-            _targetsLookup = state.GetComponentLookup<Targets>(true);
+            _targetsLookup = state.GetUnsafeComponentLookup<Targets>(true);
             _linkSourceLookup = state.GetUnsafeComponentLookup<EntityLinkSource>(true);
             _linkLookup = state.GetUnsafeBufferLookup<EntityLinkEntry>(true);
         }
@@ -95,7 +95,7 @@ namespace BovineLabs.Timeline.Distance.Debug
             [ReadOnly] public UnsafeComponentLookup<LocalToWorld> LtwLookup;
             [ReadOnly] public UnsafeComponentLookup<LocalTransform> LocalTransformLookup;
             [ReadOnly] public UnsafeComponentLookup<Parent> ParentLookup;
-            [ReadOnly] public ComponentLookup<Targets> TargetsLookup;
+            [ReadOnly] public UnsafeComponentLookup<Targets> TargetsLookup;
             [ReadOnly] public UnsafeComponentLookup<EntityLinkSource> LinkSourceLookup;
             [ReadOnly] public UnsafeBufferLookup<EntityLinkEntry> LinkLookup;
 
