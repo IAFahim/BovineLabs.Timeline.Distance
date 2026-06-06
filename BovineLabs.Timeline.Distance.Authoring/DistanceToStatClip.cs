@@ -1,3 +1,4 @@
+using BovineLabs.Core.Authoring.EntityCommands;
 using BovineLabs.Essence.Authoring;
 using BovineLabs.Reaction.Data.Core;
 using BovineLabs.Timeline.Authoring;
@@ -24,7 +25,7 @@ namespace BovineLabs.Timeline.Distance.Authoring
         public StatSchemaObject stat;
 
         [Tooltip(
-            "Multiplier applied before converting the float distance into an integer stat (e.g., 100 to map 1.5m to 150)")]
+            "Multiplier applied before converting the float distance into an integer stat (e.g., 100 to map 1.5m to 150")]
         public float multiplier = 1f;
 
         [Header("Update Mode")] public DistanceUpdateMode mode = DistanceUpdateMode.Continuous;
@@ -39,11 +40,13 @@ namespace BovineLabs.Timeline.Distance.Authoring
         {
             if (stat == null) return;
 
+            var commands = new BakerCommands(context.Baker, clipEntity);
+
             EntityLinkAuthoringUtility.TryGetKey(fromLink, out var fromKey);
             EntityLinkAuthoringUtility.TryGetKey(toLink, out var toKey);
             EntityLinkAuthoringUtility.TryGetKey(statTargetLink, out var statTargetKey);
 
-            context.Baker.AddComponent(clipEntity, new DistanceToStatData
+            commands.AddComponent(new DistanceToStatData
             {
                 From = from,
                 FromLinkKey = fromKey,
@@ -57,7 +60,7 @@ namespace BovineLabs.Timeline.Distance.Authoring
                 Multiplier = multiplier
             });
 
-            context.Baker.AddComponent<DistanceToStatState>(clipEntity);
+            commands.AddComponent<DistanceToStatState>();
 
             base.Bake(clipEntity, context);
         }
