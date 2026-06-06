@@ -3,6 +3,7 @@ using BovineLabs.Essence.Authoring;
 using BovineLabs.Reaction.Data.Core;
 using BovineLabs.Timeline.Authoring;
 using BovineLabs.Timeline.Distance.Data;
+using BovineLabs.Timeline.Distance.Data.Builders;
 using BovineLabs.Timeline.EntityLinks.Authoring;
 using Unity.Entities;
 using UnityEngine;
@@ -40,27 +41,29 @@ namespace BovineLabs.Timeline.Distance.Authoring
         {
             if (stat == null) return;
 
-            var commands = new BakerCommands(context.Baker, clipEntity);
-
             EntityLinkAuthoringUtility.TryGetKey(fromLink, out var fromKey);
             EntityLinkAuthoringUtility.TryGetKey(toLink, out var toKey);
             EntityLinkAuthoringUtility.TryGetKey(statTargetLink, out var statTargetKey);
 
-            commands.AddComponent(new DistanceToStatData
+            var builder = new DistanceToStatBuilder
             {
-                From = from,
-                FromLinkKey = fromKey,
-                To = to,
-                ToLinkKey = toKey,
-                StatTarget = statTarget,
-                StatLinkKey = statTargetKey,
-                StatKey = stat.Key,
-                Mode = mode,
-                Interval = interval,
-                Multiplier = multiplier
-            });
-
-            commands.AddComponent<DistanceToStatState>();
+                Data = new DistanceToStatData
+                {
+                    From = from,
+                    FromLinkKey = fromKey,
+                    To = to,
+                    ToLinkKey = toKey,
+                    StatTarget = statTarget,
+                    StatLinkKey = statTargetKey,
+                    StatKey = stat.Key,
+                    Mode = mode,
+                    Interval = interval,
+                    Multiplier = multiplier
+                },
+                HasState = true
+            };
+            var commands = new BakerCommands(context.Baker, clipEntity);
+            builder.ApplyTo(ref commands);
 
             base.Bake(clipEntity, context);
         }
