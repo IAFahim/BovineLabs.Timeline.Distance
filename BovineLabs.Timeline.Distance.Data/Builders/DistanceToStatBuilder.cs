@@ -1,5 +1,4 @@
 using BovineLabs.Core.EntityCommands;
-using Unity.Entities;
 
 namespace BovineLabs.Timeline.Distance.Data.Builders
 {
@@ -12,10 +11,7 @@ namespace BovineLabs.Timeline.Distance.Data.Builders
             where T : struct, IEntityCommands
         {
             builder.AddComponent(Data);
-            if (HasState)
-            {
-                builder.AddComponent<DistanceToStatState>();
-            }
+            if (HasState) builder.AddComponent<DistanceToStatState>();
         }
     }
 }

@@ -6,11 +6,11 @@ using BovineLabs.Core.Extensions;
 using BovineLabs.Core.Iterators;
 using BovineLabs.Quill;
 using BovineLabs.Reaction.Data.Core;
+using BovineLabs.Timeline.Core.Debug;
 using BovineLabs.Timeline.Data;
 using BovineLabs.Timeline.Distance.Data;
 using BovineLabs.Timeline.EntityLinks;
 using BovineLabs.Timeline.EntityLinks.Data;
-using BovineLabs.Timeline.Core.Debug;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -33,7 +33,9 @@ namespace BovineLabs.Timeline.Distance.Debug
 
         private struct Tags
         {
-            public struct Enabled { }
+            public struct Enabled
+            {
+            }
         }
     }
 
@@ -65,7 +67,7 @@ namespace BovineLabs.Timeline.Distance.Debug
         public void OnUpdate(ref SystemState state)
         {
             if (!TimelineDebugUtility.TryGetDrawer<DistanceToStatDebugSystem>(
-                  ref state, DistanceToStatDebugSystemConfig.Enabled.Data, out var drawer))
+                    ref state, DistanceToStatDebugSystemConfig.Enabled.Data, out var drawer))
                 return;
 
             _ltwLookup.Update(ref state);
@@ -102,9 +104,7 @@ namespace BovineLabs.Timeline.Distance.Debug
             private float3 GetAntiJitterPosition(Entity e, float3 fallback)
             {
                 if (LocalTransformLookup.HasComponent(e) && !ParentLookup.HasComponent(e))
-                {
                     return LocalTransformLookup[e].Position;
-                }
                 return fallback;
             }
 
@@ -186,7 +186,8 @@ namespace BovineLabs.Timeline.Distance.Debug
             private Entity ResolveTarget(Entity self, Target mode, ushort linkKey, in Targets targets)
             {
                 if (linkKey != 0 &&
-                    EntityLinkResolver.TryResolve(self, targets, mode, linkKey, LinkSourceLookup, LinkLookup, out var linked))
+                    EntityLinkResolver.TryResolve(self, targets, mode, linkKey, LinkSourceLookup, LinkLookup,
+                        out var linked))
                     return linked;
                 return targets.Get(mode, self);
             }
