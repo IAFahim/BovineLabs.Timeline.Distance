@@ -2,6 +2,6 @@
   {
     "id": "unity-track-distance-to-stat",
     "displayName": "Track Distance To Stat",
-    "description": "Master of DistanceToStatTrack + DistanceToStatClip (package BovineLabs.Timeline.Distance) — continuous/interval distance measurement into a live-updating while-active stat modifier, the multiplier=100 rule, the mode-doubles-as-readRootFrom link quirk. Portable to any project containing the package; worked example from vex-ee. Use when a designer asks \"feed the distance between A and B into a stat\"."
+    "description": "Master of DistanceToStatTrack + DistanceToStatClip (package BovineLabs.Timeline.Distance) — continuous/interval distance measurement into a live-updating while-active stat modifier, the multiplier=100 rule, the mode-doubles-as-readRootFrom link quirk. Portable to any project containing the package; worked example from vex-ee."
   }
 ]
