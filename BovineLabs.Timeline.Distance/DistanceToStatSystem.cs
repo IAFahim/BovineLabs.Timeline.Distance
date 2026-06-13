@@ -46,10 +46,7 @@ namespace BovineLabs.Timeline.Distance
 
             state.Dependency = new GatherRemoveJob
             {
-                Mutations = mutations.AsParallelWriter(),
-                TargetsLookup = state.GetUnsafeComponentLookup<Targets>(true),
-                Sources = state.GetUnsafeComponentLookup<EntityLinkSource>(true),
-                Entries = state.GetUnsafeBufferLookup<EntityLinkEntry>(true)
+                Mutations = mutations.AsParallelWriter()
             }.ScheduleParallel(state.Dependency);
 
             state.Dependency = new ApplyJob
@@ -128,6 +125,8 @@ namespace BovineLabs.Timeline.Distance
                     Value = (int)math.round(distance)
                 };
 
+                state.AppliedTarget = statEntity;
+
                 Mutations.Enqueue(new StatMutation
                 {
                     Target = statEntity,
@@ -145,25 +144,18 @@ namespace BovineLabs.Timeline.Distance
         {
             public NativeQueue<StatMutation>.ParallelWriter Mutations;
 
-            [ReadOnly] public UnsafeComponentLookup<Targets> TargetsLookup;
-            [ReadOnly] public UnsafeComponentLookup<EntityLinkSource> Sources;
-            [ReadOnly] public UnsafeBufferLookup<EntityLinkEntry> Entries;
-
-            private void Execute(Entity clipEntity, in TrackBinding binding, in DistanceToStatData data)
+            private void Execute(Entity clipEntity, ref DistanceToStatState state)
             {
-                if (binding.Value == Entity.Null || data.StatKey.Value == 0) return;
-                if (!TargetsLookup.TryGetComponent(binding.Value, out var targets)) return;
-
-                var statEntity = ResolveTarget(binding.Value, data.StatTarget, data.StatLinkKey, in targets, Sources,
-                    Entries);
-                if (statEntity == Entity.Null) return;
+                if (state.AppliedTarget == Entity.Null) return;
 
                 Mutations.Enqueue(new StatMutation
                 {
-                    Target = statEntity,
+                    Target = state.AppliedTarget,
                     Source = clipEntity,
                     IsRemove = true
                 });
+
+                state.AppliedTarget = Entity.Null;
             }
         }
 

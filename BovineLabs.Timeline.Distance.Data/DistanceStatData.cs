@@ -34,5 +34,6 @@ namespace BovineLabs.Timeline.Distance.Data
     public struct DistanceToStatState : IComponentData
     {
         public float Timer;
+        public Entity AppliedTarget;
     }
 }
