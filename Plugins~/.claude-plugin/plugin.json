@@ -1,0 +1,8 @@
+{
+  "name": "bovinelabs-timeline-distance",
+  "description": "Vex Unity agent skills shipped with BovineLabs Timeline Distance.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Spline Mesher Pro"
+  }
+}
