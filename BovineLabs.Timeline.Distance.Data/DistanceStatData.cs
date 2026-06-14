@@ -13,15 +13,12 @@ namespace BovineLabs.Timeline.Distance.Data
 
     public struct DistanceToStatData : IComponentData
     {
-        // Target A
         public Target From;
         public ushort FromLinkKey;
 
-        // Target B
         public Target To;
         public ushort ToLinkKey;
 
-        // Where the stat lives and which stat to modify
         public Target StatTarget;
         public ushort StatLinkKey;
         public StatKey StatKey;

@@ -76,35 +76,8 @@ namespace BovineLabs.Timeline.Distance
                 if (!TargetsLookup.TryGetComponent(binding.Value, out var targets)) return;
 
                 var isFirstFrame = !activePrev.ValueRO;
-                var shouldUpdate = false;
 
-                if (data.Mode == DistanceUpdateMode.OnStart)
-                {
-                    shouldUpdate = isFirstFrame;
-                }
-                else if (data.Mode == DistanceUpdateMode.Continuous)
-                {
-                    shouldUpdate = true;
-                }
-                else if (data.Mode == DistanceUpdateMode.Interval)
-                {
-                    if (isFirstFrame)
-                    {
-                        state.Timer = 0f;
-                        shouldUpdate = true;
-                    }
-                    else
-                    {
-                        state.Timer += DeltaTime;
-                        if (state.Timer >= data.Interval)
-                        {
-                            state.Timer -= data.Interval;
-                            shouldUpdate = true;
-                        }
-                    }
-                }
-
-                if (!shouldUpdate) return;
+                if (!ShouldUpdate(data.Mode, isFirstFrame, data.Interval, DeltaTime, ref state.Timer)) return;
 
                 var fromEntity = ResolveTarget(binding.Value, data.From, data.FromLinkKey, in targets, Sources,
                     Entries);
@@ -134,6 +107,50 @@ namespace BovineLabs.Timeline.Distance
                     Modifier = modifier,
                     IsRemove = false
                 });
+            }
+
+            private static bool ShouldUpdate(DistanceUpdateMode mode, bool isFirstFrame, float interval, float deltaTime,
+                ref float timer)
+            {
+                switch (mode)
+                {
+                    case DistanceUpdateMode.OnStart:
+                        return isFirstFrame;
+                    case DistanceUpdateMode.Continuous:
+                        return true;
+                    case DistanceUpdateMode.Interval:
+                        return ShouldUpdateInterval(isFirstFrame, interval, deltaTime, ref timer);
+                    default:
+                        return false;
+                }
+            }
+
+            private static bool ShouldUpdateInterval(bool isFirstFrame, float interval, float deltaTime, ref float timer)
+            {
+                if (isFirstFrame)
+                {
+                    timer = 0f;
+                    return true;
+                }
+
+                timer += deltaTime;
+                if (timer < interval)
+                    return false;
+
+                timer -= interval;
+                return true;
+            }
+
+            private static Entity ResolveTarget(
+                Entity self, Target mode, ushort linkKey,
+                in Targets targets,
+                in UnsafeComponentLookup<EntityLinkSource> sources,
+                in UnsafeBufferLookup<EntityLinkEntry> entries)
+            {
+                if (linkKey != 0 &&
+                    EntityLinkResolver.TryResolve(self, targets, mode, linkKey, sources, entries, out var linked))
+                    return linked;
+                return targets.Get(mode, self);
             }
         }
 
@@ -190,18 +207,6 @@ namespace BovineLabs.Timeline.Distance
                         });
                 }
             }
-        }
-
-        private static Entity ResolveTarget(
-            Entity self, Target mode, ushort linkKey,
-            in Targets targets,
-            in UnsafeComponentLookup<EntityLinkSource> sources,
-            in UnsafeBufferLookup<EntityLinkEntry> entries)
-        {
-            if (linkKey != 0 &&
-                EntityLinkResolver.TryResolve(self, targets, mode, linkKey, sources, entries, out var linked))
-                return linked;
-            return targets.Get(mode, self);
         }
     }
 }
