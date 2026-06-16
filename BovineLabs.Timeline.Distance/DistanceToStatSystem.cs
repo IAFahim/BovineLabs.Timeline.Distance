@@ -90,6 +90,8 @@ namespace BovineLabs.Timeline.Distance
                     !LtwLookup.TryGetComponent(toEntity, out var toLtw)) return;
 
                 var distance = math.distance(fromLtw.Position, toLtw.Position) * data.Multiplier;
+                if (!math.isfinite(distance))
+                    return;
 
                 var modifier = new StatModifier
                 {

@@ -50,7 +50,17 @@ namespace BovineLabs.Timeline.Distance.Authoring
 
         public override void Bake(Entity clipEntity, BakingContext context)
         {
-            if (stat == null) return;
+            if (stat == null)
+            {
+                Debug.LogWarning($"DistanceToStatClip '{name}' has no Stat assigned; the clip will not modify any stat.", this);
+                return;
+            }
+
+            // Register dependencies so a change to the referenced schema assets re-triggers baking.
+            context.Baker.DependsOn(stat);
+            context.Baker.DependsOn(fromLink);
+            context.Baker.DependsOn(toLink);
+            context.Baker.DependsOn(statTargetLink);
 
             EntityLinkAuthoringUtility.TryGetKey(fromLink, out var fromKey);
             EntityLinkAuthoringUtility.TryGetKey(toLink, out var toKey);
