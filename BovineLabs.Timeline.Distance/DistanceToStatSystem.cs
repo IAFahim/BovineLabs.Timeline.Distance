@@ -98,6 +98,20 @@ namespace BovineLabs.Timeline.Distance
                     Value = (int)math.round(distance)
                 };
 
+                // If the resolved stat target changed since last update (re-route via link/Targets slot),
+                // remove our modifier from the OLD target first; otherwise it leaks there permanently
+                // because the per-update add only replaces on the new target and clip-end removes only
+                // from state.AppliedTarget.
+                if (state.AppliedTarget != Entity.Null && state.AppliedTarget != statEntity)
+                {
+                    Mutations.Enqueue(new StatMutation
+                    {
+                        Target = state.AppliedTarget,
+                        Source = clipEntity,
+                        IsRemove = true
+                    });
+                }
+
                 state.AppliedTarget = statEntity;
 
                 Mutations.Enqueue(new StatMutation
