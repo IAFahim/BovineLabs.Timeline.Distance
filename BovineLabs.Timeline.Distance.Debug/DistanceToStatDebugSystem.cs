@@ -67,7 +67,8 @@ namespace BovineLabs.Timeline.Distance.Debug
         public void OnUpdate(ref SystemState state)
         {
             if (!TimelineDebugUtility.TryGetDrawer<DistanceToStatDebugSystem>(
-                    ref state, DistanceToStatDebugSystemConfig.Enabled.Data, out var drawer))
+                    ref state, DistanceToStatDebugSystemConfig.Enabled.Data, out var drawer,
+                    out var viewer, out var hasViewer))
                 return;
 
             _ltwLookup.Update(ref state);
@@ -80,6 +81,8 @@ namespace BovineLabs.Timeline.Distance.Debug
             state.Dependency = new DrawDistanceJob
             {
                 Drawer = drawer,
+                Viewer = viewer,
+                HasViewer = hasViewer,
                 LtwLookup = _ltwLookup,
                 LocalTransformLookup = _localTransformLookup,
                 ParentLookup = _parentLookup,
@@ -94,6 +97,8 @@ namespace BovineLabs.Timeline.Distance.Debug
         private partial struct DrawDistanceJob : IJobEntity
         {
             public Drawer Drawer;
+            public float3 Viewer;
+            public bool HasViewer;
             [ReadOnly] public UnsafeComponentLookup<LocalToWorld> LtwLookup;
             [ReadOnly] public UnsafeComponentLookup<LocalTransform> LocalTransformLookup;
             [ReadOnly] public UnsafeComponentLookup<Parent> ParentLookup;
@@ -127,10 +132,11 @@ namespace BovineLabs.Timeline.Distance.Debug
                 var start = GetAntiJitterPosition(fromEntity, fromLtw.Position);
                 var end = GetAntiJitterPosition(toEntity, toLtw.Position);
 
-                DrawElegantTether(start, end, data.Multiplier);
+                var tier = TimelineDebugTier.Resolve(start, Viewer, HasViewer);
+                DrawElegantTether(start, end, data.Multiplier, tier);
             }
 
-            private unsafe void DrawElegantTether(float3 start, float3 end, float multiplier)
+            private unsafe void DrawElegantTether(float3 start, float3 end, float multiplier, DebugTier tier)
             {
                 var distance = math.distance(start, end);
                 if (distance < 0.01f) return;
@@ -163,24 +169,28 @@ namespace BovineLabs.Timeline.Distance.Debug
                     prev = current;
                 }
 
+                // Far: the distance tether — the one shape that says what this measures.
                 Drawer.Lines(lines.GetSubArray(0, lineLength), LineColor);
 
-                Drawer.Point(start, 0.06f, PointColor);
-                Drawer.Point(end, 0.06f, PointColor);
+                if (tier >= DebugTier.Mid)
+                {
+                    // Mid: the two endpoints being measured + a short label.
+                    Drawer.Point(start, 0.06f, PointColor);
+                    Drawer.Point(end, 0.06f, PointColor);
+                    Drawer.Text32(mid + new float3(0f, 0.25f, 0f), (FixedString32Bytes)"Distance", TextColor, 12f);
+                }
 
-                var statValue = (int)math.round(distance * multiplier);
-
-                var text = new FixedString64Bytes();
-                text.Append(distance);
-                text.Append('m');
-                text.Append(' ');
-                text.Append(' ');
-                text.Append('[');
-                text.Append(statValue);
-                text.Append(']');
-
-                var textPos = mid + new float3(0f, 0.25f, 0f);
-                Drawer.Text64(textPos, text, TextColor, 12f);
+                if (tier == DebugTier.Close)
+                {
+                    // Close: the measured distance + resulting stat value.
+                    var statValue = (int)math.round(distance * multiplier);
+                    var text = new FixedString128Bytes();
+                    text.Append(distance);
+                    text.Append((FixedString32Bytes)"m  -> [");
+                    text.Append(statValue);
+                    text.Append((FixedString32Bytes)"]");
+                    Drawer.Text128(mid + new float3(0f, 0.5f, 0f), text, TimelineDebugColors.Label, 11f);
+                }
             }
 
             private Entity ResolveTarget(Entity self, Target mode, ushort linkKey, in Targets targets)
