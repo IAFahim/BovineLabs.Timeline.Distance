@@ -10,7 +10,6 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Unity.Mathematics;
 using Unity.Transforms;
 
 namespace BovineLabs.Timeline.Distance
@@ -78,7 +77,9 @@ namespace BovineLabs.Timeline.Distance
 
                 var isFirstFrame = !activePrev.ValueRO;
 
-                if (!ShouldUpdate(data.Mode, isFirstFrame, data.Interval, DeltaTime, ref state.Timer)) return;
+                if (!DistanceSampling.ShouldSample(data.Mode, isFirstFrame, data.Interval, DeltaTime, state.Timer,
+                        out var newTimer)) return;
+                state.Timer = newTimer;
 
                 var fromEntity = ResolveTarget(binding.Value, data.From, data.FromLinkKey, in targets, Sources,
                     Entries);
@@ -90,16 +91,8 @@ namespace BovineLabs.Timeline.Distance
                 if (!LtwLookup.TryGetComponent(fromEntity, out var fromLtw) ||
                     !LtwLookup.TryGetComponent(toEntity, out var toLtw)) return;
 
-                var distance = math.distance(fromLtw.Position, toLtw.Position) * data.Multiplier;
-                if (!math.isfinite(distance))
-                    return;
-
-                var modifier = new StatModifier
-                {
-                    Type = data.StatKey,
-                    ModifyType = StatModifyType.Added,
-                    Value = (int)math.round(distance)
-                };
+                if (!DistanceSampling.TryComputeModifier(fromLtw.Position, toLtw.Position, data.Multiplier,
+                        data.StatKey, out var modifier)) return;
 
                 if (state.AppliedTarget != Entity.Null && state.AppliedTarget != statEntity)
                     Mutations.Enqueue(new StatMutation
@@ -118,40 +111,6 @@ namespace BovineLabs.Timeline.Distance
                     Modifier = modifier,
                     IsRemove = false
                 });
-            }
-
-            private static bool ShouldUpdate(DistanceUpdateMode mode, bool isFirstFrame, float interval,
-                float deltaTime,
-                ref float timer)
-            {
-                switch (mode)
-                {
-                    case DistanceUpdateMode.OnStart:
-                        return isFirstFrame;
-                    case DistanceUpdateMode.Continuous:
-                        return true;
-                    case DistanceUpdateMode.Interval:
-                        return ShouldUpdateInterval(isFirstFrame, interval, deltaTime, ref timer);
-                    default:
-                        return false;
-                }
-            }
-
-            private static bool ShouldUpdateInterval(bool isFirstFrame, float interval, float deltaTime,
-                ref float timer)
-            {
-                if (isFirstFrame)
-                {
-                    timer = 0f;
-                    return true;
-                }
-
-                timer += deltaTime;
-                if (timer < interval)
-                    return false;
-
-                timer -= interval;
-                return true;
             }
 
             private static Entity ResolveTarget(
@@ -210,7 +169,7 @@ namespace BovineLabs.Timeline.Distance
                     for (var i = array.Length - 1; i >= 0; i--)
                     {
                         var source = array[i].SourceEntity;
-                        if (source == mutation.Source || (source != Entity.Null && !StorageInfo.Exists(source)))
+                        if (DistanceSampling.ShouldDropModifier(source, mutation.Source, StorageInfo.Exists(source)))
                             buffer.RemoveAtSwapBack(i);
                     }
 

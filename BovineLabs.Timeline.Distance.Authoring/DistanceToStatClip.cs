@@ -44,7 +44,7 @@ namespace BovineLabs.Timeline.Distance.Authoring
         public DistanceUpdateMode mode = DistanceUpdateMode.Continuous;
 
         [Min(0f)] [Tooltip("Used only if Mode is Interval")]
-        public float interval = 0.5f;
+        public float interval = DistanceInterval.Default;
 
         public override double duration => 1;
         public ClipCaps clipCaps => ClipCaps.Blending | ClipCaps.Looping;
@@ -63,13 +63,12 @@ namespace BovineLabs.Timeline.Distance.Authoring
             context.Baker.DependsOn(toLink);
             context.Baker.DependsOn(statTargetLink);
 
-            var safeInterval = interval;
-            if (mode == DistanceUpdateMode.Interval && safeInterval <= 0f)
+            var safeInterval = DistanceInterval.Resolve(mode, interval);
+            if (safeInterval != interval)
             {
                 Debug.LogWarning(
-                    $"DistanceToStatClip '{name}' is in Interval mode with interval {interval}; clamping to 0.5s to avoid per-frame updates.",
+                    $"DistanceToStatClip '{name}' is in Interval mode with interval {interval}; clamping to {safeInterval}s to avoid per-frame updates.",
                     this);
-                safeInterval = 0.5f;
             }
 
             EntityLinkAuthoringUtility.TryGetKey(fromLink, out var fromKey);

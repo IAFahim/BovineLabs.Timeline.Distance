@@ -6,6 +6,7 @@
     "BovineLabs.Core.Extensions",
     "BovineLabs.Testing",
     "BovineLabs.Timeline.Distance",
+    "BovineLabs.Timeline.Distance.Authoring",
     "BovineLabs.Timeline.Distance.Data",
     "Unity.Burst",
     "Unity.Collections",
@@ -19,6 +20,7 @@
     "Unity.Physics",
     "Unity.Transforms",
     "BovineLabs.Timeline.Data",
+    "BovineLabs.Timeline.Authoring",
     "BovineLabs.Reaction.Data",
     "BovineLabs.Essence.Data"
   ],
