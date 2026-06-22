@@ -23,6 +23,7 @@ namespace BovineLabs.Timeline.Distance.Authoring
         [Tooltip(
             "Which endpoint B of the distance is measured to. When toLink is set, this same enum also selects whose link map is read to resolve the linked entity.")]
         public Target to = Target.Target;
+
         public EntityLinkSchema toLink;
 
         [Header("Stat Routing")]
@@ -42,8 +43,7 @@ namespace BovineLabs.Timeline.Distance.Authoring
             "Continuous updates the modifier every frame; Interval updates every Interval seconds; OnStart writes once when the clip becomes active.")]
         public DistanceUpdateMode mode = DistanceUpdateMode.Continuous;
 
-        [Min(0f)]
-        [Tooltip("Used only if Mode is Interval")]
+        [Min(0f)] [Tooltip("Used only if Mode is Interval")]
         public float interval = 0.5f;
 
         public override double duration => 1;
@@ -53,18 +53,16 @@ namespace BovineLabs.Timeline.Distance.Authoring
         {
             if (stat == null)
             {
-                Debug.LogWarning($"DistanceToStatClip '{name}' has no Stat assigned; the clip will not modify any stat.", this);
+                Debug.LogWarning(
+                    $"DistanceToStatClip '{name}' has no Stat assigned; the clip will not modify any stat.", this);
                 return;
             }
 
-            // Register dependencies so a change to the referenced schema assets re-triggers baking.
             context.Baker.DependsOn(stat);
             context.Baker.DependsOn(fromLink);
             context.Baker.DependsOn(toLink);
             context.Baker.DependsOn(statTargetLink);
 
-            // In Interval mode a zero/negative interval makes the runtime fire every frame (and a negative one grows
-            // the timer unbounded), silently degrading to Continuous. Clamp to the default to preserve throttling.
             var safeInterval = interval;
             if (mode == DistanceUpdateMode.Interval && safeInterval <= 0f)
             {

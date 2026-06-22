@@ -169,12 +169,10 @@ namespace BovineLabs.Timeline.Distance.Debug
                     prev = current;
                 }
 
-                // Far: the distance tether — the one shape that says what this measures.
                 Drawer.Lines(lines.GetSubArray(0, lineLength), LineColor);
 
                 if (tier >= DebugTier.Mid)
                 {
-                    // Mid: the two endpoints being measured + a short label.
                     Drawer.Point(start, 0.06f, PointColor);
                     Drawer.Point(end, 0.06f, PointColor);
                     Drawer.Text32(mid + new float3(0f, 0.25f, 0f), (FixedString32Bytes)"Distance", TextColor, 12f);
@@ -182,7 +180,6 @@ namespace BovineLabs.Timeline.Distance.Debug
 
                 if (tier == DebugTier.Close)
                 {
-                    // Close: the measured distance + resulting stat value.
                     var statValue = (int)math.round(distance * multiplier);
                     var text = new FixedString128Bytes();
                     text.Append(distance);

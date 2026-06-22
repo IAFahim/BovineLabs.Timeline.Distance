@@ -1,39 +1,39 @@
 {
-    "name": "BovineLabs.Timeline.Distance.Tests",
-    "rootNamespace": "",
-    "references": [
-        "BovineLabs.Core",
-        "BovineLabs.Core.Extensions",
-        "BovineLabs.Testing",
-        "BovineLabs.Timeline.Distance",
-        "BovineLabs.Timeline.Distance.Data",
-        "Unity.Burst",
-        "Unity.Collections",
-        "Unity.Entities",
-        "Unity.Entities.Graphics",
-        "Unity.Entities.Hybrid",
-        "Unity.InputSystem",
-        "Unity.Mathematics",
-        "Unity.Mathematics.Extensions",
-        "Unity.PerformanceTesting",
-        "Unity.Physics",
-        "Unity.Transforms",
-        "BovineLabs.Timeline.Data",
-        "BovineLabs.Reaction.Data",
-        "BovineLabs.Essence.Data"
-    ],
-    "optionalUnityReferences": [
-        "TestAssemblies"
-    ],
-    "includePlatforms": [
-        "Editor"
-    ],
-    "excludePlatforms": [],
-    "allowUnsafeCode": true,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": false,
-    "defineConstraints": [],
-    "versionDefines": [],
-    "noEngineReferences": false
+  "name": "BovineLabs.Timeline.Distance.Tests",
+  "rootNamespace": "",
+  "references": [
+    "BovineLabs.Core",
+    "BovineLabs.Core.Extensions",
+    "BovineLabs.Testing",
+    "BovineLabs.Timeline.Distance",
+    "BovineLabs.Timeline.Distance.Data",
+    "Unity.Burst",
+    "Unity.Collections",
+    "Unity.Entities",
+    "Unity.Entities.Graphics",
+    "Unity.Entities.Hybrid",
+    "Unity.InputSystem",
+    "Unity.Mathematics",
+    "Unity.Mathematics.Extensions",
+    "Unity.PerformanceTesting",
+    "Unity.Physics",
+    "Unity.Transforms",
+    "BovineLabs.Timeline.Data",
+    "BovineLabs.Reaction.Data",
+    "BovineLabs.Essence.Data"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": true,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
 }

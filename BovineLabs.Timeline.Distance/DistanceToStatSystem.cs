@@ -101,19 +101,13 @@ namespace BovineLabs.Timeline.Distance
                     Value = (int)math.round(distance)
                 };
 
-                // If the resolved stat target changed since last update (re-route via link/Targets slot),
-                // remove our modifier from the OLD target first; otherwise it leaks there permanently
-                // because the per-update add only replaces on the new target and clip-end removes only
-                // from state.AppliedTarget.
                 if (state.AppliedTarget != Entity.Null && state.AppliedTarget != statEntity)
-                {
                     Mutations.Enqueue(new StatMutation
                     {
                         Target = state.AppliedTarget,
                         Source = clipEntity,
                         IsRemove = true
                     });
-                }
 
                 state.AppliedTarget = statEntity;
 
@@ -126,7 +120,8 @@ namespace BovineLabs.Timeline.Distance
                 });
             }
 
-            private static bool ShouldUpdate(DistanceUpdateMode mode, bool isFirstFrame, float interval, float deltaTime,
+            private static bool ShouldUpdate(DistanceUpdateMode mode, bool isFirstFrame, float interval,
+                float deltaTime,
                 ref float timer)
             {
                 switch (mode)
@@ -142,7 +137,8 @@ namespace BovineLabs.Timeline.Distance
                 }
             }
 
-            private static bool ShouldUpdateInterval(bool isFirstFrame, float interval, float deltaTime, ref float timer)
+            private static bool ShouldUpdateInterval(bool isFirstFrame, float interval, float deltaTime,
+                ref float timer)
             {
                 if (isFirstFrame)
                 {
@@ -210,10 +206,6 @@ namespace BovineLabs.Timeline.Distance
 
                     StatChangeds.SetComponentEnabled(mutation.Target, true);
 
-                    // Remove our own previous modifier and garbage-collect any entry whose SourceEntity
-                    // no longer exists. Without this, a clip entity destroyed mid-activation (subscene
-                    // unload / timeline teardown) leaves its modifier on this still-alive target forever,
-                    // because GatherRemoveJob can only fire for a clip that still exists.
                     var array = buffer.AsNativeArray();
                     for (var i = array.Length - 1; i >= 0; i--)
                     {
