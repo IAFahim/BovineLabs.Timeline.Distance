@@ -53,7 +53,8 @@ namespace BovineLabs.Timeline.Distance
             {
                 Mutations = mutations,
                 StatModifiers = SystemAPI.GetBufferLookup<StatModifiers>(),
-                StatChangeds = SystemAPI.GetComponentLookup<StatChanged>()
+                StatChangeds = SystemAPI.GetComponentLookup<StatChanged>(),
+                StorageInfo = SystemAPI.GetEntityStorageInfoLookup()
             }.Schedule(state.Dependency);
         }
 
@@ -199,6 +200,8 @@ namespace BovineLabs.Timeline.Distance
             public BufferLookup<StatModifiers> StatModifiers;
             public ComponentLookup<StatChanged> StatChangeds;
 
+            [ReadOnly] public EntityStorageInfoLookup StorageInfo;
+
             public void Execute()
             {
                 while (Mutations.TryDequeue(out var mutation))
@@ -207,13 +210,17 @@ namespace BovineLabs.Timeline.Distance
 
                     StatChangeds.SetComponentEnabled(mutation.Target, true);
 
+                    // Remove our own previous modifier and garbage-collect any entry whose SourceEntity
+                    // no longer exists. Without this, a clip entity destroyed mid-activation (subscene
+                    // unload / timeline teardown) leaves its modifier on this still-alive target forever,
+                    // because GatherRemoveJob can only fire for a clip that still exists.
                     var array = buffer.AsNativeArray();
                     for (var i = array.Length - 1; i >= 0; i--)
-                        if (array[i].SourceEntity == mutation.Source)
-                        {
+                    {
+                        var source = array[i].SourceEntity;
+                        if (source == mutation.Source || (source != Entity.Null && !StorageInfo.Exists(source)))
                             buffer.RemoveAtSwapBack(i);
-                            break;
-                        }
+                    }
 
                     if (!mutation.IsRemove)
                         buffer.Add(new StatModifiers

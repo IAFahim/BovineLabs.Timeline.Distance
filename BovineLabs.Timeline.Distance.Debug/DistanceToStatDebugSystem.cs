@@ -119,7 +119,7 @@ namespace BovineLabs.Timeline.Distance.Debug
 
             private void Execute(Entity entity, in TrackBinding binding, in DistanceToStatData data)
             {
-                if (binding.Value == Entity.Null) return;
+                if (binding.Value == Entity.Null || data.StatKey.Value == 0) return;
                 if (!TargetsLookup.TryGetComponent(binding.Value, out var targets)) return;
 
                 var fromEntity = ResolveTarget(binding.Value, data.From, data.FromLinkKey, in targets);
@@ -139,7 +139,7 @@ namespace BovineLabs.Timeline.Distance.Debug
             private unsafe void DrawElegantTether(float3 start, float3 end, float multiplier, DebugTier tier)
             {
                 var distance = math.distance(start, end);
-                if (distance < 0.01f) return;
+                if (!math.isfinite(distance) || distance < 0.01f) return;
 
                 var mid = (start + end) * 0.5f;
                 mid.y += math.clamp(distance * 0.15f, 0.2f, 2.0f);

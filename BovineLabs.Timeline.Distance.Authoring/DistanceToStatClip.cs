@@ -42,6 +42,7 @@ namespace BovineLabs.Timeline.Distance.Authoring
             "Continuous updates the modifier every frame; Interval updates every Interval seconds; OnStart writes once when the clip becomes active.")]
         public DistanceUpdateMode mode = DistanceUpdateMode.Continuous;
 
+        [Min(0f)]
         [Tooltip("Used only if Mode is Interval")]
         public float interval = 0.5f;
 
@@ -62,6 +63,17 @@ namespace BovineLabs.Timeline.Distance.Authoring
             context.Baker.DependsOn(toLink);
             context.Baker.DependsOn(statTargetLink);
 
+            // In Interval mode a zero/negative interval makes the runtime fire every frame (and a negative one grows
+            // the timer unbounded), silently degrading to Continuous. Clamp to the default to preserve throttling.
+            var safeInterval = interval;
+            if (mode == DistanceUpdateMode.Interval && safeInterval <= 0f)
+            {
+                Debug.LogWarning(
+                    $"DistanceToStatClip '{name}' is in Interval mode with interval {interval}; clamping to 0.5s to avoid per-frame updates.",
+                    this);
+                safeInterval = 0.5f;
+            }
+
             EntityLinkAuthoringUtility.TryGetKey(fromLink, out var fromKey);
             EntityLinkAuthoringUtility.TryGetKey(toLink, out var toKey);
             EntityLinkAuthoringUtility.TryGetKey(statTargetLink, out var statTargetKey);
@@ -78,7 +90,7 @@ namespace BovineLabs.Timeline.Distance.Authoring
                     StatLinkKey = statTargetKey,
                     StatKey = stat.Key,
                     Mode = mode,
-                    Interval = interval,
+                    Interval = safeInterval,
                     Multiplier = multiplier
                 },
                 HasState = true
