@@ -33,6 +33,13 @@ namespace BovineLabs.Timeline.Distance
         {
             var mutations = new NativeQueue<StatMutation>(state.WorldUpdateAllocator);
 
+            var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
+                .CreateCommandBuffer(state.WorldUnmanaged);
+
+            // Attach/sync a cleanup shadow so a clip destroyed mid-active still removes its modifier.
+            state.Dependency = new AttachCleanupJob { ECB = ecb.AsParallelWriter() }.ScheduleParallel(state.Dependency);
+            state.Dependency = new SyncCleanupJob().ScheduleParallel(state.Dependency);
+
             state.Dependency = new GatherActiveJob
             {
                 DeltaTime = SystemAPI.Time.DeltaTime,
@@ -48,6 +55,13 @@ namespace BovineLabs.Timeline.Distance
                 Mutations = mutations.AsParallelWriter()
             }.ScheduleParallel(state.Dependency);
 
+            // Zombie clip entities (State gone, Cleanup retained) enqueue their modifier removal, then shed cleanup.
+            state.Dependency = new GatherDestroyedJob
+            {
+                Mutations = mutations.AsParallelWriter(),
+                ECB = ecb.AsParallelWriter()
+            }.ScheduleParallel(state.Dependency);
+
             state.Dependency = new ApplyJob
             {
                 Mutations = mutations,
@@ -55,6 +69,46 @@ namespace BovineLabs.Timeline.Distance
                 StatChangeds = SystemAPI.GetComponentLookup<StatChanged>(),
                 StorageInfo = SystemAPI.GetEntityStorageInfoLookup()
             }.Schedule(state.Dependency);
+        }
+
+        [BurstCompile]
+        [WithAll(typeof(DistanceToStatState))]
+        [WithNone(typeof(DistanceToStatCleanup))]
+        private partial struct AttachCleanupJob : IJobEntity
+        {
+            public EntityCommandBuffer.ParallelWriter ECB;
+
+            private void Execute([ChunkIndexInQuery] int sortKey, Entity entity)
+            {
+                ECB.AddComponent(sortKey, entity, new DistanceToStatCleanup { Target = Entity.Null });
+            }
+        }
+
+        [BurstCompile]
+        private partial struct SyncCleanupJob : IJobEntity
+        {
+            private void Execute(in DistanceToStatState state, ref DistanceToStatCleanup cleanup)
+            {
+                cleanup.Target = state.AppliedTarget;
+            }
+        }
+
+        [BurstCompile]
+        [WithNone(typeof(DistanceToStatState))]
+        private partial struct GatherDestroyedJob : IJobEntity
+        {
+            public NativeQueue<StatMutation>.ParallelWriter Mutations;
+            public EntityCommandBuffer.ParallelWriter ECB;
+
+            private void Execute([ChunkIndexInQuery] int sortKey, Entity entity, in DistanceToStatCleanup cleanup)
+            {
+                if (cleanup.Target != Entity.Null)
+                {
+                    Mutations.Enqueue(new StatMutation { Target = cleanup.Target, Source = entity, IsRemove = true });
+                }
+
+                ECB.RemoveComponent<DistanceToStatCleanup>(sortKey, entity);
+            }
         }
 
         [BurstCompile]
@@ -77,9 +131,14 @@ namespace BovineLabs.Timeline.Distance
 
                 var isFirstFrame = !activePrev.ValueRO;
 
-                if (!DistanceSampling.ShouldSample(data.Mode, isFirstFrame, data.Interval, DeltaTime, state.Timer,
-                        out var newTimer)) return;
-                state.Timer = newTimer;
+                // OnStart normally fires only on the enter edge; if resolution transiently fails that one frame the
+                // sample would be lost for the whole clip. Retry until the first successful apply (AppliedTarget set).
+                var onStartPending = data.Mode == DistanceUpdateMode.OnStart && state.AppliedTarget == Entity.Null;
+
+                var shouldSample = DistanceSampling.ShouldSample(data.Mode, isFirstFrame || onStartPending, data.Interval,
+                    DeltaTime, state.Timer, out var newTimer);
+                state.Timer = newTimer; // persist unconditionally so Interval mode actually accumulates on skip frames
+                if (!shouldSample) return;
 
                 var fromEntity = ResolveTarget(binding.Value, data.From, data.FromLinkKey, in targets, Sources,
                     Entries);

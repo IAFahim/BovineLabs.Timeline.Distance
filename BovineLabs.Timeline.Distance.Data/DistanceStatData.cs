@@ -33,4 +33,14 @@ namespace BovineLabs.Timeline.Distance.Data
         public float Timer;
         public Entity AppliedTarget;
     }
+
+    /// <summary>
+    /// Cleanup shadow of <see cref="DistanceToStatState.AppliedTarget"/> so the applied modifier is removed even
+    /// when the clip entity is destroyed while active (subscene stream-out / director destroy) and never traverses
+    /// the normal ClipActive exit edge.
+    /// </summary>
+    public struct DistanceToStatCleanup : ICleanupComponentData
+    {
+        public Entity Target;
+    }
 }
