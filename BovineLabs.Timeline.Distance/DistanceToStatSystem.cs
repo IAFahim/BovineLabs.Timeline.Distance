@@ -119,9 +119,10 @@ namespace BovineLabs.Timeline.Distance
                 in UnsafeComponentLookup<EntityLinkSource> sources,
                 in UnsafeBufferLookup<EntityLinkEntry> entries)
             {
-                if (linkKey != 0 &&
-                    EntityLinkResolver.TryResolve(self, targets, mode, linkKey, sources, entries, out var linked))
-                    return linked;
+                if (linkKey != 0)
+                    return EntityLinkResolver.TryResolve(self, targets, mode, linkKey, sources, entries, out var linked)
+                        ? linked
+                        : Entity.Null;
                 return targets.Get(mode, self);
             }
         }

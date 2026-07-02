@@ -48,7 +48,7 @@ namespace BovineLabs.Timeline.Distance.Data
 
         public static bool ShouldDropModifier(Entity entrySource, Entity mutationSource, bool entrySourceExists)
         {
-            return entrySource == mutationSource || (entrySource != Entity.Null && entrySourceExists == false);
+            return entrySource == mutationSource;
         }
 
         private static bool ShouldSampleInterval(bool isFirstFrame, float interval, float deltaTime, float timer,
