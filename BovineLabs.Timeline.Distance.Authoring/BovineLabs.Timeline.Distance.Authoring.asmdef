@@ -23,6 +23,7 @@
     "BovineLabs.Essence.Data",
     "BovineLabs.Timeline.Authoring",
     "BovineLabs.Timeline.EntityLinks.Authoring",
+    "BovineLabs.Timeline.EntityLinks.Data",
     "Unity.Timeline"
   ],
   "optionalUnityReferences": [],

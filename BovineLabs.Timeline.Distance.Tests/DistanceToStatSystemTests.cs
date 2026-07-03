@@ -3,6 +3,7 @@ using BovineLabs.Reaction.Data.Core;
 using BovineLabs.Testing;
 using BovineLabs.Timeline.Data;
 using BovineLabs.Timeline.Distance.Data;
+using BovineLabs.Timeline.EntityLinks.Data;
 using NUnit.Framework;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -85,9 +86,9 @@ namespace BovineLabs.Timeline.Distance.Tests
             Manager.AddComponentData(clip, new TrackBinding { Value = bound });
             Manager.AddComponentData(clip, new DistanceToStatData
             {
-                From = Target.Self,
-                To = Target.Target,
-                StatTarget = Target.Self,
+                From = new EntityLinkRef { ReadRootFrom = Target.Self },
+                To = new EntityLinkRef { ReadRootFrom = Target.Target },
+                StatTarget = new EntityLinkRef { ReadRootFrom = Target.Self },
                 StatKey = statKey,
                 Mode = mode,
                 Multiplier = multiplier

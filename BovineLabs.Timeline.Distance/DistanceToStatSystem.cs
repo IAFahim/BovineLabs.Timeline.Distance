@@ -140,11 +140,11 @@ namespace BovineLabs.Timeline.Distance
                 state.Timer = newTimer; // persist unconditionally so Interval mode actually accumulates on skip frames
                 if (!shouldSample) return;
 
-                var fromEntity = ResolveTarget(binding.Value, data.From, data.FromLinkKey, in targets, Sources,
-                    Entries);
-                var toEntity = ResolveTarget(binding.Value, data.To, data.ToLinkKey, in targets, Sources, Entries);
-                var statEntity = ResolveTarget(binding.Value, data.StatTarget, data.StatLinkKey, in targets, Sources,
-                    Entries);
+                // Strict (fallbackToRoot: false): a set-but-unresolved link means "no target", so we write nothing —
+                // never fall back to the root slot, which would feed the distance to the wrong entity.
+                data.From.TryResolve(binding.Value, targets, Sources, Entries, out var fromEntity, false);
+                data.To.TryResolve(binding.Value, targets, Sources, Entries, out var toEntity, false);
+                data.StatTarget.TryResolve(binding.Value, targets, Sources, Entries, out var statEntity, false);
 
                 if (fromEntity == Entity.Null || toEntity == Entity.Null || statEntity == Entity.Null) return;
                 if (!LtwLookup.TryGetComponent(fromEntity, out var fromLtw) ||
@@ -170,19 +170,6 @@ namespace BovineLabs.Timeline.Distance
                     Modifier = modifier,
                     IsRemove = false
                 });
-            }
-
-            private static Entity ResolveTarget(
-                Entity self, Target mode, ushort linkKey,
-                in Targets targets,
-                in UnsafeComponentLookup<EntityLinkSource> sources,
-                in UnsafeBufferLookup<EntityLinkEntry> entries)
-            {
-                if (linkKey != 0)
-                    return EntityLinkResolver.TryResolve(self, targets, mode, linkKey, sources, entries, out var linked)
-                        ? linked
-                        : Entity.Null;
-                return targets.Get(mode, self);
             }
         }
 

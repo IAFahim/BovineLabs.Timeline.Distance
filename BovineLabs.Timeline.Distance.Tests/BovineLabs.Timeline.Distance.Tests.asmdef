@@ -22,7 +22,8 @@
     "BovineLabs.Timeline.Data",
     "BovineLabs.Timeline.Authoring",
     "BovineLabs.Reaction.Data",
-    "BovineLabs.Essence.Data"
+    "BovineLabs.Essence.Data",
+    "BovineLabs.Timeline.EntityLinks.Data"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

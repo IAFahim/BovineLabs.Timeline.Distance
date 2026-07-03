@@ -122,8 +122,8 @@ namespace BovineLabs.Timeline.Distance.Debug
                 if (binding.Value == Entity.Null || data.StatKey.Value == 0) return;
                 if (!TargetsLookup.TryGetComponent(binding.Value, out var targets)) return;
 
-                var fromEntity = ResolveTarget(binding.Value, data.From, data.FromLinkKey, in targets);
-                var toEntity = ResolveTarget(binding.Value, data.To, data.ToLinkKey, in targets);
+                data.From.TryResolve(binding.Value, targets, LinkSourceLookup, LinkLookup, out var fromEntity, false);
+                data.To.TryResolve(binding.Value, targets, LinkSourceLookup, LinkLookup, out var toEntity, false);
 
                 if (fromEntity == Entity.Null || toEntity == Entity.Null) return;
                 if (!LtwLookup.TryGetComponent(fromEntity, out var fromLtw) ||
@@ -188,15 +188,6 @@ namespace BovineLabs.Timeline.Distance.Debug
                     text.Append((FixedString32Bytes)"]");
                     Drawer.Text128(mid + new float3(0f, 0.5f, 0f), text, TimelineDebugColors.Label, 11f);
                 }
-            }
-
-            private Entity ResolveTarget(Entity self, Target mode, ushort linkKey, in Targets targets)
-            {
-                if (linkKey != 0 &&
-                    EntityLinkResolver.TryResolve(self, targets, mode, linkKey, LinkSourceLookup, LinkLookup,
-                        out var linked))
-                    return linked;
-                return targets.Get(mode, self);
             }
         }
     }

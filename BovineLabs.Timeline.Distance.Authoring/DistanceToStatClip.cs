@@ -13,25 +13,24 @@ namespace BovineLabs.Timeline.Distance.Authoring
 {
     public sealed class DistanceToStatClip : DOTSClip, ITimelineClipAsset
     {
+        public EntityLinkSchema fromLink;
+        public EntityLinkSchema toLink;
+        public EntityLinkSchema statTargetLink;
+
         [Header("Distance Calculation")]
         [Tooltip(
             "Which endpoint A of the distance is measured from. When fromLink is set, this same enum also selects whose link map is read to resolve the linked entity.")]
         public Target from = Target.Owner;
 
-        public EntityLinkSchema fromLink;
-
         [Tooltip(
             "Which endpoint B of the distance is measured to. When toLink is set, this same enum also selects whose link map is read to resolve the linked entity.")]
         public Target to = Target.Target;
-
-        public EntityLinkSchema toLink;
 
         [Header("Stat Routing")]
         [Tooltip(
             "Which entity owns the stat that receives the modifier. When statTargetLink is set, this same enum also selects whose link map is read to resolve the linked entity.")]
         public Target statTarget = Target.Self;
 
-        public EntityLinkSchema statTargetLink;
         public StatSchemaObject stat;
 
         [Tooltip(
@@ -59,9 +58,6 @@ namespace BovineLabs.Timeline.Distance.Authoring
             }
 
             context.Baker.DependsOn(stat);
-            context.Baker.DependsOn(fromLink);
-            context.Baker.DependsOn(toLink);
-            context.Baker.DependsOn(statTargetLink);
 
             var safeInterval = DistanceInterval.Resolve(mode, interval);
             if (safeInterval != interval)
@@ -71,20 +67,13 @@ namespace BovineLabs.Timeline.Distance.Authoring
                     this);
             }
 
-            EntityLinkAuthoringUtility.TryGetKey(fromLink, out var fromKey);
-            EntityLinkAuthoringUtility.TryGetKey(toLink, out var toKey);
-            EntityLinkAuthoringUtility.TryGetKey(statTargetLink, out var statTargetKey);
-
             var builder = new DistanceToStatBuilder
             {
                 Data = new DistanceToStatData
                 {
-                    From = from,
-                    FromLinkKey = fromKey,
-                    To = to,
-                    ToLinkKey = toKey,
-                    StatTarget = statTarget,
-                    StatLinkKey = statTargetKey,
+                    From = EntityLinkAuthoringUtility.BakeRef(context.Baker, fromLink, from),
+                    To = EntityLinkAuthoringUtility.BakeRef(context.Baker, toLink, to),
+                    StatTarget = EntityLinkAuthoringUtility.BakeRef(context.Baker, statTargetLink, statTarget),
                     StatKey = stat.Key,
                     Mode = mode,
                     Interval = safeInterval,

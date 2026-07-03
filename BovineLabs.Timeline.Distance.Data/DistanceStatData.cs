@@ -1,5 +1,5 @@
 using BovineLabs.Essence.Data;
-using BovineLabs.Reaction.Data.Core;
+using BovineLabs.Timeline.EntityLinks.Data;
 using Unity.Entities;
 
 namespace BovineLabs.Timeline.Distance.Data
@@ -13,14 +13,9 @@ namespace BovineLabs.Timeline.Distance.Data
 
     public struct DistanceToStatData : IComponentData
     {
-        public Target From;
-        public ushort FromLinkKey;
-
-        public Target To;
-        public ushort ToLinkKey;
-
-        public Target StatTarget;
-        public ushort StatLinkKey;
+        public EntityLinkRef From;
+        public EntityLinkRef To;
+        public EntityLinkRef StatTarget;
         public StatKey StatKey;
 
         public DistanceUpdateMode Mode;
