@@ -77,16 +77,33 @@ namespace BovineLabs.Timeline.Distance.Tests
         {
             var statKey = new StatKey { Value = 7 };
 
-            Assert.IsTrue(DistanceSampling.TryComputeModifier(float3.zero, new float3(5f, 0f, 0f), 1f, statKey,
+            Assert.IsTrue(DistanceSampling.TryComputeModifier(float3.zero, new float3(5f, 0f, 0f), 1f, 1f, statKey,
                 out var m1));
             Assert.AreEqual(5, m1.Value);
             Assert.AreEqual(StatModifyType.Added, m1.ModifyType);
             Assert.AreEqual(7, (int)m1.Type.Value);
 
-            Assert.IsTrue(DistanceSampling.TryComputeModifier(float3.zero, new float3(1.5f, 0f, 0f), 100f, statKey,
+            Assert.IsTrue(DistanceSampling.TryComputeModifier(float3.zero, new float3(1.5f, 0f, 0f), 100f, 1f, statKey,
                 out var m2));
             Assert.AreEqual(150, m2.Value);
             Assert.AreEqual(StatModifyType.Added, m2.ModifyType);
+        }
+
+        [Test]
+        public void TryComputeModifier_ScalesByWeight()
+        {
+            var statKey = new StatKey { Value = 7 };
+            var to = new float3(2f, 0f, 0f);
+
+            // weight 0 -> no contribution; 0.5 -> half; 1 -> full (2m x100 = 200).
+            Assert.IsTrue(DistanceSampling.TryComputeModifier(float3.zero, to, 100f, 0f, statKey, out var zero));
+            Assert.AreEqual(0, zero.Value);
+
+            Assert.IsTrue(DistanceSampling.TryComputeModifier(float3.zero, to, 100f, 0.5f, statKey, out var half));
+            Assert.AreEqual(100, half.Value);
+
+            Assert.IsTrue(DistanceSampling.TryComputeModifier(float3.zero, to, 100f, 1f, statKey, out var full));
+            Assert.AreEqual(200, full.Value);
         }
 
         [Test]
@@ -95,11 +112,11 @@ namespace BovineLabs.Timeline.Distance.Tests
             var statKey = new StatKey { Value = 1 };
 
             Assert.IsFalse(DistanceSampling.TryComputeModifier(float3.zero, new float3(float.NaN, 0f, 0f), 1f,
-                statKey, out _));
-            Assert.IsFalse(DistanceSampling.TryComputeModifier(float3.zero, new float3(float.PositiveInfinity, 0f, 0f),
                 1f, statKey, out _));
+            Assert.IsFalse(DistanceSampling.TryComputeModifier(float3.zero, new float3(float.PositiveInfinity, 0f, 0f),
+                1f, 1f, statKey, out _));
             Assert.IsFalse(DistanceSampling.TryComputeModifier(float3.zero, new float3(5f, 0f, 0f),
-                float.PositiveInfinity, statKey, out _));
+                float.PositiveInfinity, 1f, statKey, out _));
         }
 
         [Test]

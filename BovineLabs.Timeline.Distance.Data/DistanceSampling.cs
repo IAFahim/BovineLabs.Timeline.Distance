@@ -27,10 +27,11 @@ namespace BovineLabs.Timeline.Distance.Data
             }
         }
 
-        public static bool TryComputeModifier(float3 from, float3 to, float multiplier, StatKey statKey,
+        public static bool TryComputeModifier(float3 from, float3 to, float multiplier, float weight, StatKey statKey,
             out StatModifier modifier)
         {
-            var distance = math.distance(from, to) * multiplier;
+            // weight is the clip's evaluated timeline ease (0..1) so a blend in/out fades the stat contribution.
+            var distance = math.distance(from, to) * multiplier * weight;
             if (!math.isfinite(distance))
             {
                 modifier = default;

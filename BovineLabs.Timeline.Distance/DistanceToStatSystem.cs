@@ -47,7 +47,8 @@ namespace BovineLabs.Timeline.Distance
                 TargetsLookup = state.GetUnsafeComponentLookup<Targets>(true),
                 LtwLookup = state.GetUnsafeComponentLookup<LocalToWorld>(true),
                 Sources = state.GetUnsafeComponentLookup<EntityLinkSource>(true),
-                Entries = state.GetUnsafeBufferLookup<EntityLinkEntry>(true)
+                Entries = state.GetUnsafeBufferLookup<EntityLinkEntry>(true),
+                ClipWeights = SystemAPI.GetComponentLookup<ClipWeight>(true)
             }.ScheduleParallel(state.Dependency);
 
             state.Dependency = new GatherRemoveJob
@@ -122,6 +123,7 @@ namespace BovineLabs.Timeline.Distance
             [ReadOnly] public UnsafeComponentLookup<LocalToWorld> LtwLookup;
             [ReadOnly] public UnsafeComponentLookup<EntityLinkSource> Sources;
             [ReadOnly] public UnsafeBufferLookup<EntityLinkEntry> Entries;
+            [ReadOnly] public ComponentLookup<ClipWeight> ClipWeights;
 
             private void Execute(Entity clipEntity, in TrackBinding binding, in DistanceToStatData data,
                 ref DistanceToStatState state, EnabledRefRO<ClipActivePrevious> activePrev)
@@ -150,8 +152,14 @@ namespace BovineLabs.Timeline.Distance
                 if (!LtwLookup.TryGetComponent(fromEntity, out var fromLtw) ||
                     !LtwLookup.TryGetComponent(toEntity, out var toLtw)) return;
 
+                // OnStart is a one-shot snapshot — never fade it by the blend-in (whose weight is ~0 on the enter
+                // edge). Continuous/Interval scale by the clip's evaluated ease so a blend in/out fades the stat.
+                var weight = data.Mode == DistanceUpdateMode.OnStart
+                    ? 1f
+                    : ClipWeights.TryGetComponent(clipEntity, out var clipWeight) ? clipWeight.Value : 1f;
+
                 if (!DistanceSampling.TryComputeModifier(fromLtw.Position, toLtw.Position, data.Multiplier,
-                        data.StatKey, out var modifier)) return;
+                        weight, data.StatKey, out var modifier)) return;
 
                 if (state.AppliedTarget != Entity.Null && state.AppliedTarget != statEntity)
                     Mutations.Enqueue(new StatMutation
