@@ -100,7 +100,12 @@ namespace BovineLabs.Timeline.Distance.Tests
 
         private void RunSystem()
         {
+            // DistanceToStatSystem reads the EndSimulation ECB singleton (registered by the system's OnCreate) and
+            // schedules jobs that write into its command buffer. Update that system afterwards to complete the
+            // producer jobs and play the buffer back, mirroring the real frame order.
+            var ecbSystem = World.GetOrCreateSystemManaged<EndSimulationEntityCommandBufferSystem>();
             World.GetOrCreateSystem<DistanceToStatSystem>().Update(WorldUnmanaged);
+            ecbSystem.Update();
             Manager.CompleteAllTrackedJobs();
         }
     }

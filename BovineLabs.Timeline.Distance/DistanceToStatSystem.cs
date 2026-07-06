@@ -36,8 +36,12 @@ namespace BovineLabs.Timeline.Distance
             var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);
 
+            // One shared writer: creating a second AsParallelWriter() on the main thread AFTER the first job is
+            // scheduled trips the job-safety system (it reads the ECB while a write job is pending).
+            var ecbWriter = ecb.AsParallelWriter();
+
             // Attach/sync a cleanup shadow so a clip destroyed mid-active still removes its modifier.
-            state.Dependency = new AttachCleanupJob { ECB = ecb.AsParallelWriter() }.ScheduleParallel(state.Dependency);
+            state.Dependency = new AttachCleanupJob { ECB = ecbWriter }.ScheduleParallel(state.Dependency);
             state.Dependency = new SyncCleanupJob().ScheduleParallel(state.Dependency);
 
             state.Dependency = new GatherActiveJob
@@ -60,7 +64,7 @@ namespace BovineLabs.Timeline.Distance
             state.Dependency = new GatherDestroyedJob
             {
                 Mutations = mutations.AsParallelWriter(),
-                ECB = ecb.AsParallelWriter()
+                ECB = ecbWriter
             }.ScheduleParallel(state.Dependency);
 
             state.Dependency = new ApplyJob

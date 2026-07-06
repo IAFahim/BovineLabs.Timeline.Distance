@@ -49,7 +49,9 @@ namespace BovineLabs.Timeline.Distance.Data
 
         public static bool ShouldDropModifier(Entity entrySource, Entity mutationSource, bool entrySourceExists)
         {
-            return entrySource == mutationSource;
+            // Drop the entry if it's this source's own modifier (a replace), OR if it's a stale modifier whose
+            // source clip entity has been destroyed (garbage-collect the leak). Never drop a null source.
+            return entrySource == mutationSource || (entrySource != Entity.Null && !entrySourceExists);
         }
 
         private static bool ShouldSampleInterval(bool isFirstFrame, float interval, float deltaTime, float timer,
