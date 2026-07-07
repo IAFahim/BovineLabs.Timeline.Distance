@@ -2,6 +2,7 @@ using BovineLabs.Core.Extensions;
 using BovineLabs.Core.Iterators;
 using BovineLabs.Essence.Data;
 using BovineLabs.Reaction.Data.Core;
+using BovineLabs.Timeline.Core;
 using BovineLabs.Timeline.Data;
 using BovineLabs.Timeline.Distance.Data;
 using BovineLabs.Timeline.EntityLinks;
@@ -132,7 +133,7 @@ namespace BovineLabs.Timeline.Distance
             private void Execute(Entity clipEntity, in TrackBinding binding, in DistanceToStatData data,
                 ref DistanceToStatState state, EnabledRefRO<ClipActivePrevious> activePrev)
             {
-                if (binding.Value == Entity.Null || data.StatKey.Value == 0) return;
+                if (binding.Value == Entity.Null || data.StatKey.Value.IsNull()) return;
                 if (!TargetsLookup.TryGetComponent(binding.Value, out var targets)) return;
 
                 var isFirstFrame = !activePrev.ValueRO;

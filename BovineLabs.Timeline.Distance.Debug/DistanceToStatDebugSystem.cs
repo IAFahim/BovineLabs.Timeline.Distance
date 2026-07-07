@@ -6,6 +6,7 @@ using BovineLabs.Core.Extensions;
 using BovineLabs.Core.Iterators;
 using BovineLabs.Quill;
 using BovineLabs.Reaction.Data.Core;
+using BovineLabs.Timeline.Core;
 using BovineLabs.Timeline.Core.Debug;
 using BovineLabs.Timeline.Data;
 using BovineLabs.Timeline.Distance.Data;
@@ -119,7 +120,7 @@ namespace BovineLabs.Timeline.Distance.Debug
 
             private void Execute(Entity entity, in TrackBinding binding, in DistanceToStatData data)
             {
-                if (binding.Value == Entity.Null || data.StatKey.Value == 0) return;
+                if (binding.Value == Entity.Null || data.StatKey.Value.IsNull()) return;
                 if (!TargetsLookup.TryGetComponent(binding.Value, out var targets)) return;
 
                 data.From.TryResolve(binding.Value, targets, LinkSourceLookup, LinkLookup, out var fromEntity, false);

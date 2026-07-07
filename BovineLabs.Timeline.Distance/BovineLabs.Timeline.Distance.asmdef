@@ -19,6 +19,7 @@
     "Unity.Mathematics.Extensions",
     "Unity.Physics",
     "BovineLabs.Timeline",
+    "BovineLabs.Timeline.Core",
     "Unity.Transforms",
     "BovineLabs.Essence.Data",
     "BovineLabs.Reaction.Data",

@@ -83,7 +83,7 @@ namespace BovineLabs.Timeline.Distance.Authoring
                     From = EntityLinkAuthoringUtility.BakeRef(context.Baker, fromLink, from),
                     To = EntityLinkAuthoringUtility.BakeRef(context.Baker, toLink, to),
                     StatTarget = EntityLinkAuthoringUtility.BakeRef(context.Baker, statTargetLink, statTarget),
-                    StatKey = stat.Key,
+                    StatKey = stat.Key.ID,
                     Mode = mode,
                     Interval = safeInterval,
                     Multiplier = multiplier

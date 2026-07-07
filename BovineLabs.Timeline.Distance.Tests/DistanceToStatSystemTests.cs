@@ -1,6 +1,8 @@
 using BovineLabs.Essence.Data;
 using BovineLabs.Reaction.Data.Core;
+using BovineLabs.Core.ObjectManagement;
 using BovineLabs.Testing;
+using BovineLabs.Timeline.Core;
 using BovineLabs.Timeline.Data;
 using BovineLabs.Timeline.Distance.Data;
 using BovineLabs.Timeline.EntityLinks.Data;
@@ -26,7 +28,7 @@ namespace BovineLabs.Timeline.Distance.Tests
             var modifiers = Manager.GetBuffer<StatModifiers>(bound);
             Assert.AreEqual(1, modifiers.Length);
             Assert.AreEqual(5, modifiers[0].Value.Value);
-            Assert.AreEqual(1, (int)modifiers[0].Value.Type.Value);
+            Assert.AreEqual(1, modifiers[0].Value.Type.Value.ID());
         }
 
         [Test]

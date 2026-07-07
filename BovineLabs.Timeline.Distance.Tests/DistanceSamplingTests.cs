@@ -1,5 +1,7 @@
 using BovineLabs.Essence.Data;
+using BovineLabs.Timeline.Core;
 using BovineLabs.Timeline.Distance.Data;
+using BovineLabs.Core.ObjectManagement;
 using NUnit.Framework;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -81,7 +83,7 @@ namespace BovineLabs.Timeline.Distance.Tests
                 out var m1));
             Assert.AreEqual(5, m1.Value);
             Assert.AreEqual(StatModifyType.Added, m1.ModifyType);
-            Assert.AreEqual(7, (int)m1.Type.Value);
+            Assert.AreEqual(7, m1.Type.Value.ID());
 
             Assert.IsTrue(DistanceSampling.TryComputeModifier(float3.zero, new float3(1.5f, 0f, 0f), 100f, 1f, statKey,
                 out var m2));

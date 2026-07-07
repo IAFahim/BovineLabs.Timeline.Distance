@@ -19,6 +19,7 @@
     "Unity.PerformanceTesting",
     "Unity.Physics",
     "Unity.Transforms",
+    "BovineLabs.Timeline.Core",
     "BovineLabs.Timeline.Data",
     "BovineLabs.Timeline.Authoring",
     "BovineLabs.Reaction.Data",
