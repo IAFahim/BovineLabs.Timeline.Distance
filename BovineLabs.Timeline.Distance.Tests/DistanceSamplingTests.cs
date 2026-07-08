@@ -1,7 +1,7 @@
 using BovineLabs.Essence.Data;
 using BovineLabs.Timeline.Core;
 using BovineLabs.Timeline.Distance.Data;
-using BovineLabs.Core.ObjectManagement;
+using BovineLabs.Nerve.ObjectManagement;
 using NUnit.Framework;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -77,13 +77,13 @@ namespace BovineLabs.Timeline.Distance.Tests
         [Test]
         public void TryComputeModifier_RoundsDistanceTimesMultiplier()
         {
-            var statKey = new StatKey { Value = 7 };
+            var statKey = new StatKey { Value = new BovineLabs.Core.BLId(7) };
 
             Assert.IsTrue(DistanceSampling.TryComputeModifier(float3.zero, new float3(5f, 0f, 0f), 1f, 1f, statKey,
                 out var m1));
             Assert.AreEqual(5, m1.Value);
             Assert.AreEqual(StatModifyType.Added, m1.ModifyType);
-            Assert.AreEqual(7, m1.Type.Value.ID());
+            Assert.AreEqual(7, m1.Type.Value.ID);
 
             Assert.IsTrue(DistanceSampling.TryComputeModifier(float3.zero, new float3(1.5f, 0f, 0f), 100f, 1f, statKey,
                 out var m2));
@@ -94,7 +94,7 @@ namespace BovineLabs.Timeline.Distance.Tests
         [Test]
         public void TryComputeModifier_ScalesByWeight()
         {
-            var statKey = new StatKey { Value = 7 };
+            var statKey = new StatKey { Value = new BovineLabs.Core.BLId(7) };
             var to = new float3(2f, 0f, 0f);
 
             // weight 0 -> no contribution; 0.5 -> half; 1 -> full (2m x100 = 200).
@@ -111,7 +111,7 @@ namespace BovineLabs.Timeline.Distance.Tests
         [Test]
         public void TryComputeModifier_NonFinite_ReturnsFalse()
         {
-            var statKey = new StatKey { Value = 1 };
+            var statKey = new StatKey { Value = new BovineLabs.Core.BLId(1) };
 
             Assert.IsFalse(DistanceSampling.TryComputeModifier(float3.zero, new float3(float.NaN, 0f, 0f), 1f,
                 1f, statKey, out _));

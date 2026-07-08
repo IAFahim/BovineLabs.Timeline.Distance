@@ -1,6 +1,6 @@
 using BovineLabs.Essence.Data;
 using BovineLabs.Reaction.Data.Core;
-using BovineLabs.Core.ObjectManagement;
+using BovineLabs.Nerve.ObjectManagement;
 using BovineLabs.Testing;
 using BovineLabs.Timeline.Core;
 using BovineLabs.Timeline.Data;
@@ -21,14 +21,14 @@ namespace BovineLabs.Timeline.Distance.Tests
             var bound = CreateStatBody(float3.zero);
             var target = CreatePoint(new float3(5f, 0f, 0f));
             BindTarget(bound, target);
-            CreateClip(bound, new StatKey { Value = 1 }, DistanceUpdateMode.Continuous, 1f);
+            CreateClip(bound, new StatKey { Value = new BovineLabs.Core.BLId(1) }, DistanceUpdateMode.Continuous, 1f);
 
             RunSystem();
 
             var modifiers = Manager.GetBuffer<StatModifiers>(bound);
             Assert.AreEqual(1, modifiers.Length);
             Assert.AreEqual(5, modifiers[0].Value.Value);
-            Assert.AreEqual(1, modifiers[0].Value.Type.Value.ID());
+            Assert.AreEqual(1, modifiers[0].Value.Type.Value.ID);
         }
 
         [Test]
@@ -37,7 +37,7 @@ namespace BovineLabs.Timeline.Distance.Tests
             var bound = CreateStatBody(float3.zero);
             var target = CreatePoint(new float3(0f, 10f, 0f));
             BindTarget(bound, target);
-            CreateClip(bound, new StatKey { Value = 2 }, DistanceUpdateMode.Continuous, 0.5f);
+            CreateClip(bound, new StatKey { Value = new BovineLabs.Core.BLId(2) }, DistanceUpdateMode.Continuous, 0.5f);
 
             RunSystem();
 

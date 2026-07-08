@@ -120,7 +120,7 @@ namespace BovineLabs.Timeline.Distance.Debug
 
             private void Execute(Entity entity, in TrackBinding binding, in DistanceToStatData data)
             {
-                if (binding.Value == Entity.Null || data.StatKey.Value.IsNull()) return;
+                if (binding.Value == Entity.Null || data.StatKey.Value.IsNull) return;
                 if (!TargetsLookup.TryGetComponent(binding.Value, out var targets)) return;
 
                 data.From.TryResolve(binding.Value, targets, LinkSourceLookup, LinkLookup, out var fromEntity, false);

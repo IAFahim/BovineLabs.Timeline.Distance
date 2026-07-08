@@ -133,7 +133,7 @@ namespace BovineLabs.Timeline.Distance
             private void Execute(Entity clipEntity, in TrackBinding binding, in DistanceToStatData data,
                 ref DistanceToStatState state, EnabledRefRO<ClipActivePrevious> activePrev)
             {
-                if (binding.Value == Entity.Null || data.StatKey.Value.IsNull()) return;
+                if (binding.Value == Entity.Null || data.StatKey.Value.IsNull) return;
                 if (!TargetsLookup.TryGetComponent(binding.Value, out var targets)) return;
 
                 var isFirstFrame = !activePrev.ValueRO;
